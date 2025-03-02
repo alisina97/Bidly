@@ -1,0 +1,20 @@
+# Ignore IDE files
+*.iml
+.idea/
+.vscode/
+target/
+bin/
+
+# Ignore build files
+*.class
+*.war
+*.jar
+
+# Ignore OS-specific files
+.DS_Store
+
+# Ignore Maven / Gradle build directories
+mvnw
+mvnw.cmd
+.gradle/
+build/
