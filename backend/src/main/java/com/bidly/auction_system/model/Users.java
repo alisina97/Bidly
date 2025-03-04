@@ -5,29 +5,30 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "users", uniqueConstraints = {
+@Table(name = "Users", uniqueConstraints = {
     @UniqueConstraint(columnNames = "email"),
     @UniqueConstraint(columnNames = "username")
 })
-public class User {
+public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment user_id (PK)
+    @Column(name = "user_id")
     private Long userId;
 
-    @Column(nullable = false, unique = true) // Unique username
+    @Column(nullable = false, unique = true, name = "username") // Unique username
     private String username;
 
-    @Column(nullable = false, unique = true) // Unique email
+    @Column(nullable = false, unique = true, name = "email") // Unique email
     private String email;
 
-    @Column(nullable = false) // Password (hashed in real apps)
+    @Column(nullable = false, name = "password") // Password (hashed in real apps)
     private String password;
 
     // Default constructor
-    public User() {}
+    public Users() {}
 
-    public User(String username, String email, String password) {
+    public Users(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;

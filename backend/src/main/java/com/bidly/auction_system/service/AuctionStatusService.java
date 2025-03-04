@@ -2,6 +2,9 @@ package com.bidly.auction_system.service;
 
 import com.bidly.auction_system.model.AuctionStatus;
 import com.bidly.auction_system.repository.AuctionStatusRepository;
+
+import java.time.Duration;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import lombok.AccessLevel;
@@ -33,4 +36,9 @@ public class AuctionStatusService {
         return auctionStatusRepository.findByAuctionItemAuctionItemId(auctionItemId)
                 .orElseThrow(() -> new RuntimeException("Auction Status not found!"));
     }
+
+	public AuctionStatus createAuctionStatus(Long auctionItemId, Double startingPrice, Duration ofSeconds) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

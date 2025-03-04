@@ -1,7 +1,7 @@
 package com.bidly.auction_system.controller;
 
-import com.bidly.auction_system.model.User;
-import com.bidly.auction_system.service.UserService;
+import com.bidly.auction_system.model.Users;
+import com.bidly.auction_system.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,14 +10,14 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-public class UserController {
+public class UsersController {
 
     @Autowired
-    private UserService userService;
+    private UsersService userService;
 
     // ✅ Register a new user
     @PostMapping("/register")
-    public User registerUser(@RequestParam String username,
+    public Users registerUser(@RequestParam String username,
                              @RequestParam String email,
                              @RequestParam String password) {
         return userService.registerUser(username, email, password);
@@ -25,13 +25,13 @@ public class UserController {
 
     // ✅ Get all users
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<Users> getAllUsers() {
         return userService.getAllUsers();
     }
 
     // ✅ Get user by email
     @GetMapping("/email")
-    public Optional<User> getUserByEmail(@RequestParam String email) {
+    public Optional<Users> getUserByEmail(@RequestParam String email) {
         return userService.getUserByEmail(email);
     }
 }

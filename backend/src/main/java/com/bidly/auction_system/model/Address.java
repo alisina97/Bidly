@@ -10,21 +10,23 @@ public class Address {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment address_id
+    @Column(name = "address_id")
+
     private Long addressId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "country")
     private String country;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "city")
     private String city;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "postal_code")
     private String postalCode;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "street_name")
     private String streetName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "street_number")
     private String streetNumber;
 
     public Address() {}

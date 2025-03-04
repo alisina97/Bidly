@@ -6,15 +6,16 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "auction_types", uniqueConstraints = {
-    @UniqueConstraint(columnNames = "auctionTypeName") // Ensure auctionTypeName is unique
+    @UniqueConstraint(columnNames = "auction_type_name") // Ensure auctionTypeName is unique
 })
 public class AuctionType {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment auctionTypeId
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "auction_type_id")
     private Long auctionTypeId;
 
-    @Column(nullable = false, unique = true) // Unique auction type name
+    @Column(name = "auction_type_name", nullable = false, unique = true) // Corrected column mapping
     private String auctionTypeName;
 
     public AuctionType() {}

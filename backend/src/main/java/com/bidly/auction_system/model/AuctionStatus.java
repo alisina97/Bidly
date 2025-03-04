@@ -16,20 +16,21 @@ public class AuctionStatus {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment primary key
+    @Column(name = "status_id")
     private Long auctionStatusId;
 
     @OneToOne(optional = false) // One-to-One relationship (Mandatory)
-    @JoinColumn(name = "auctionItemId", nullable = false, unique = true) // FK linking to AuctionItem
+    @JoinColumn(name = "auction_item_id", nullable = false, unique = true) // FK linking to AuctionItem
     private AuctionItem auctionItem;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "current_price")
     private Double currentPrice;
 
-    @Column(nullable = false)
+    @Column(nullable = false , name = "remaining_time")
     private Duration remainingTime; // Time left for auction
 
     @Enumerated(EnumType.STRING) // Store enum as a string
-    @Column(nullable = false)
+    @Column(nullable = false , name = "item_status")
     private ItemStatus itemStatus;
 
     public AuctionStatus() {}
