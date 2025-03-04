@@ -12,7 +12,7 @@ public class UserDetailsController {
     @Autowired
     private UserDetailsService userDetailsService;
 
-    // ✅ Link a user to an address with first & last name
+    //  Link a user to an address with first & last name
     @PostMapping("/link")
     public UserDetails linkUserToAddress(@RequestParam Long userId,
                                          @RequestParam String firstName,

@@ -21,7 +21,7 @@ public class UserDetailsService {
     @Autowired
     private AddressRepository addressRepository;
 
-    // ✅ Link a user to an address with first and last name
+    //  Link a user to an address with first and last name
     public UserDetails linkUserToAddress(Long userId, String firstName, String lastName, Long addressId) {
         Users user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found!"));
         Address address = addressRepository.findById(addressId).orElseThrow(() -> new RuntimeException("Address not found!"));
