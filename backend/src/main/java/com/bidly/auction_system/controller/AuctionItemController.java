@@ -42,4 +42,10 @@ public class AuctionItemController {
     public List<AuctionItem> getItemsByCategory(@PathVariable Long categoryId) {
         return auctionItemService.getItemsByCategory(categoryId);
     }
+
+    // ✅ Search items by keyword
+    @GetMapping("/search")
+    public List<AuctionItem> searchItems(@RequestParam String keyword) {
+        return auctionItemService.searchAuctionItems(keyword);
+    }
 }

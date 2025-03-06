@@ -46,4 +46,8 @@ public class AuctionItemService {
     public List<AuctionItem> getItemsByCategory(Long categoryId) {
         return auctionItemRepository.findByCategoryCategoryId(categoryId);
     }
+
+    public List<AuctionItem> searchAuctionItems(String keyword) {
+        return auctionItemRepository.searchAuctionItems(keyword);
+    }
 }
