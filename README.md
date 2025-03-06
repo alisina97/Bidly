@@ -2,7 +2,7 @@
 
 Bidly is a full-stack auction platform where users can register, log in, and participate in auctions. This repository contains both the backend (Spring Boot) and frontend (React + Vite).
 
-## 🚀 Project Setup Instructions
+## Project Setup Instructions
 
 ### 1️⃣ Prerequisites
 
@@ -59,7 +59,7 @@ Before you begin, ensure you have the following installed:
    npm run dev
    ```
 
-   This will launch the frontend on Vite’s default port (5173).
+This will launch the frontend on Vite’s default port (5173).
 
 ---
 
