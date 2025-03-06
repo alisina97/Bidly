@@ -40,13 +40,13 @@ public class UsersController {
     }
 
 
-    // ✅ Get all users
+    //  Get all users
     @GetMapping
     public List<Users> getAllUsers() {
         return userService.getAllUsers();
     }
 
-    // ✅ Get user by email
+    //  Get user by email
     @GetMapping("/email")
     public Optional<Users> getUserByEmail(@RequestParam String email) {
         return userService.getUserByEmail(email);
