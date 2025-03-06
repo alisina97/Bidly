@@ -37,6 +37,8 @@ Before you begin, ensure you have the following installed:
    ```
    This will start the backend server on port 8080.
 
+---
+
 ### 4️⃣ Frontend Setup (React + Vite)
 
 1. Open a new terminal and navigate to the frontend folder:
@@ -58,6 +60,8 @@ Before you begin, ensure you have the following installed:
    ```
 
    This will launch the frontend on Vite’s default port (5173).
+
+---
 
 ### 5️⃣ Running the Application
 
