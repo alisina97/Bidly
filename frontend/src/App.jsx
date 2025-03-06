@@ -3,6 +3,7 @@ import Home from './pages/Home/Home'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import Login from './pages/Login/Login'
 import SignUp from './pages/SignUp/SignUp'
+import PaymentPage from './pages/PaymentPage/PaymentPage'
 
 function App() {
   const routes = (
@@ -12,6 +13,7 @@ function App() {
         <Route path='/home' exact element={<Home/>} />
         <Route path='/login' exact element={<Login/>} />
         <Route path='/signup' exact element={<SignUp/>} />
+        <Route path="/payment" exact element ={<PaymentPage/>} />
       </Routes>
     </Router>
   )
