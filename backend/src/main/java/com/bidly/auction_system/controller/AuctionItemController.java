@@ -30,6 +30,12 @@ public class AuctionItemController {
     public List<AuctionItem> getAllAuctionItems() {
         return auctionItemService.getAllAuctionItems();
     }
+    
+    // ✅ Get items by auction id
+    @GetMapping("/{auctionItemId}")
+    public AuctionItem getItemByAuctionItemId(@PathVariable Long auctionItemId) {
+        return auctionItemService.getItemByAuctionItemId(auctionItemId);
+    }
 
     // ✅ Get items by auction type
     @GetMapping("/auction-type/{auctionTypeId}")

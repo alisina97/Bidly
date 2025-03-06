@@ -12,7 +12,10 @@ import java.util.List;
 public interface AuctionItemRepository extends JpaRepository<AuctionItem, Long> {
     // ✅ Get all items by auction type
     List<AuctionItem> findByAuctionTypeAuctionTypeId(Long auctionTypeId);
-
+    
+    // ✅ Get item by auction id
+    AuctionItem findByAuctionItemId(Long auctionItemId);
+    	
     // ✅ Get all items by category
     List<AuctionItem> findByCategoryCategoryId(Long categoryId);
 

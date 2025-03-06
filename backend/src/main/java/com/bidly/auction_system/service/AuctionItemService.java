@@ -41,6 +41,11 @@ public class AuctionItemService {
     public List<AuctionItem> getItemsByAuctionType(Long auctionTypeId) {
         return auctionItemRepository.findByAuctionTypeAuctionTypeId(auctionTypeId);
     }
+    
+    // ✅ Get auction item by auction id
+    public AuctionItem getItemByAuctionItemId(Long auctionItemId) {
+        return auctionItemRepository.findByAuctionItemId(auctionItemId);
+    }
 
     // ✅ Get auction items by category
     public List<AuctionItem> getItemsByCategory(Long categoryId) {
