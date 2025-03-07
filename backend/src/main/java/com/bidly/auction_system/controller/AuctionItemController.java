@@ -54,4 +54,13 @@ public class AuctionItemController {
     public List<AuctionItem> searchItems(@RequestParam String keyword) {
         return auctionItemService.searchAuctionItems(keyword);
     }
+    
+    // ✅ Update auction item
+    @PutMapping("/update/{auctionItemId}")
+    public AuctionItem updateAuctionItem(@PathVariable Long auctionItemId, @RequestBody AuctionItem updatedAuctionItem) {
+        AuctionItem updatedItem = auctionItemService.updateAuctionItem(auctionItemId, updatedAuctionItem);
+        return updatedItem;  // Return updated auction item
+    }
+
+    
 }
