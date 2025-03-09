@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import Login from './pages/Login/Login'
 import SignUp from './pages/SignUp/SignUp'
 import PaymentPage from './pages/PaymentPage/PaymentPage'
+import BidEnd from './pages/BidEnd/BidEnd'
 
 function App() {
   const routes = (
@@ -14,6 +15,7 @@ function App() {
         <Route path='/login' exact element={<Login/>} />
         <Route path='/signup' exact element={<SignUp/>} />
         <Route path="/payment" exact element ={<PaymentPage/>} />
+        <Route path='/bidend' exact element ={<BidEnd/>} />
       </Routes>
     </Router>
   )
