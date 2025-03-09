@@ -1,3 +1,4 @@
+
 package com.bidly.auction_system.controller;
 
 import com.bidly.auction_system.model.Users;
@@ -11,15 +12,15 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UsersController {
 
     @Autowired
     private UsersService userService;
 
-    // Register User
+    //Register a new user
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(
+    public ResponseEntity<String> registerUser(
             @RequestParam String username,
             @RequestParam String email,
             @RequestParam String password,
@@ -32,51 +33,46 @@ public class UsersController {
             @RequestParam String streetName) {
 
         try {
-            Users user = userService.registerUser(username, email, password, firstName, lastName, country, city, postalCode, streetNumber, streetName);
-            return ResponseEntity.ok(user);
+            userService.registerUser(username, email, password, firstName, lastName, country, city, postalCode, streetNumber, streetName);
+            return ResponseEntity.ok("User registered successfully!");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Internal server error");
+            return ResponseEntity.status(400).body(e.getMessage());
         }
     }
 
-    // Get All Users
+
+    //  Get all users
     @GetMapping
-    public ResponseEntity<List<Users>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public List<Users> getAllUsers() {
+        return userService.getAllUsers();
     }
 
-    // Get User by Email
+    //  Get user by email
     @GetMapping("/email")
-    public ResponseEntity<?> getUserByEmail(@RequestParam String email) {
-        Optional<Users> user = userService.getUserByEmail(email);
-        return user.map(ResponseEntity::ok)
-                   .orElseGet(() -> ResponseEntity.notFound().build());
+    public Optional<Users> getUserByEmail(@RequestParam String email) {
+        return userService.getUserByEmail(email);
     }
-
-    // Get user by ID
+    
     @GetMapping("/{userId}")
     public ResponseEntity<?> getUserById(@PathVariable Long userId) {
         Optional<Users> user = userService.getUserById(userId);
         return user.map(ResponseEntity::ok)
                    .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
-    // Login user
+    
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+    public ResponseEntity<String> login(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
         String password = credentials.get("password");
 
         boolean isAuthenticated = userService.authenticateUser(username, password);
 
         if (isAuthenticated) {
-            return ResponseEntity.ok("Login successful!");
+            return ResponseEntity.ok("Login Successful!");  // ✅ HTTP 200 OK
         } else {
-            return ResponseEntity.status(401).body("Invalid username or password");
+            return ResponseEntity.status(401).body("Invalid Username or Password");  // ❌ HTTP 401 Unauthorized
         }
     }
 
-    // You may also add imports explicitly here
+
 }
