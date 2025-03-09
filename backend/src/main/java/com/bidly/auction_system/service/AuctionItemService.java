@@ -47,6 +47,13 @@ public class AuctionItemService {
         return auctionItemRepository.findByCategoryCategoryId(categoryId);
     }
 
+
+    public AuctionItem getAuctionItemById(Long auctionItemId) {
+        return auctionItemRepository.findById(auctionItemId).orElse(null);
+    }
+
+
+
     public List<AuctionItem> searchAuctionItems(String keyword) {
         return auctionItemRepository.searchAuctionItems(keyword);
     }

@@ -29,4 +29,12 @@ public class UserDetailsService {
         UserDetails userDetails = new UserDetails(user, firstName, lastName, address);
         return userDetailsRepository.save(userDetails);
     }
+
+    public UserDetails getUserDetailsByUserId(Long userId) {
+        UserDetails userDetails = userDetailsRepository.findByUserUserId(userId);
+        if (userDetails == null) {
+            throw new RuntimeException("User details not found for user id: " + userId);
+        }
+        return userDetails;
+    }
 }

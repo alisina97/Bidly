@@ -1,43 +1,74 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-const BidEnd = ({ auctionItemId, userId }) => {
+const BidEnd = () => {
+    const navigate = useNavigate();
+
     const [winner, setWinner] = useState(null);
+    const [userDetails, setUserDetails] = useState(null);
+    const [auctionItem, setAuctionItem] = useState(null);
     const [isUserWinner, setIsUserWinner] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [expeditedShipping, setExpeditedShipping] = useState(false);
 
+    const userId = 1;
+    const auctionItemId = 1;
+
     useEffect(() => {
-        if (!auctionItemId || !userId) return;
-
-        // Fetch winner details
         fetch(`/api/winners/${auctionItemId}`)
-            .then((res) => res.json())
-            .then((data) => setWinner(data))
-            .catch(() => setErrorMessage("Failed to fetch winner details."));
+            .then(res => res.json())
+            .then(data => {
+                setWinner(data);
+                fetch(`/api/user-details/details/${data.user.userId}`)
+                    .then(res => res.json())
+                    .then(setUserDetails);
+            })
+            .catch(err => setErrorMessage(err.message));
 
-        // Check if current user is the winner
+        fetch(`/api/auction-items/${auctionItemId}`)
+            .then(res => res.json())
+            .then(setAuctionItem)
+            .catch(err => setErrorMessage(err.message));
+
         fetch(`/api/winners/is-winner?userId=${userId}&auctionItemId=${auctionItemId}`)
-            .then((res) => res.json())
-            .then((isWinner) => setIsUserWinner(isWinner))
+            .then(res => res.json())
+            .then(setIsUserWinner)
             .catch(() => setErrorMessage("Failed to verify winner status."));
-    }, [auctionItemId, userId]);
+    }, []);
 
-    if (!winner) {
+    if (!winner || !userDetails || !auctionItem) {
         return <p>Loading winner details...</p>;
     }
+
+    const handlePaymentRedirect = () => {
+        if (isUserWinner) {
+            navigate("/payment", {
+                state: {
+                    winner,
+                    auctionItem,
+                    userDetails,
+                    expeditedShipping
+                }
+            });
+        } else {
+            setErrorMessage("Unauthorized: You are not the winner.");
+        }
+    };
 
     return (
         <div className="bid-end-container">
             <h1>Auction Ended</h1>
             {isUserWinner ? (
                 <>
-                    <p>Congratulations! You won the auction.</p>
-
+                    <p>
+                        Congratulations {userDetails.firstName} {userDetails.lastName}, you won the auction!
+                    </p>
                     <div className="payment-section">
                         <h2>Order Summary</h2>
-                        <p>Item: {winner.auctionItem.itemName}</p>
-                        <p>Final Price: ${winner.winningPrice}</p>
-                        <p>Standard Shipping: $10</p> {/* Example shipping price */}
+                        <p><strong>Item Name:</strong> {auctionItem.itemName}</p>
+                        <p><strong>Description:</strong> {auctionItem.itemDescription}</p>
+                        <p><strong>Final Price:</strong> ${winner.winningPrice}</p>
+                        <p>Standard Shipping: $10</p>
 
                         <label>
                             <input
@@ -52,7 +83,7 @@ const BidEnd = ({ auctionItemId, userId }) => {
                             Total: ${winner.winningPrice + 10 + (expeditedShipping ? 20 : 0)}
                         </h3>
 
-                        <button>Pay Now</button>
+                        <button onClick={handlePaymentRedirect}>Pay Now</button>
                     </div>
                 </>
             ) : (

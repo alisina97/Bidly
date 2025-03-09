@@ -69,6 +69,11 @@ public class UsersService {
     public Optional<Users> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
+
+    public Optional<Users> getUserById(Long user_id) {
+        return userRepository.findById(user_id);
+    }
+
     
     public boolean authenticateUser(String username, String password) {
         return userRepository.findByUsernameAndPassword(username, password).isPresent();

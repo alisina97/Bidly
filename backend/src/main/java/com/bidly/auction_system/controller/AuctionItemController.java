@@ -3,6 +3,7 @@ package com.bidly.auction_system.controller;
 import com.bidly.auction_system.model.AuctionItem;
 import com.bidly.auction_system.service.AuctionItemService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,6 +43,17 @@ public class AuctionItemController {
     public List<AuctionItem> getItemsByCategory(@PathVariable Long categoryId) {
         return auctionItemService.getItemsByCategory(categoryId);
     }
+
+    // ✅ Get auction item by ID
+    @GetMapping("/{auctionItemId}")
+    public ResponseEntity<?> getAuctionItemById(@PathVariable Long auctionItemId) {
+        AuctionItem item = auctionItemService.getAuctionItemById(auctionItemId);
+        if (item == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(item);
+    }
+
 
     // ✅ Search items by keyword
     @GetMapping("/search")
