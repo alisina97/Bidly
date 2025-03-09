@@ -45,10 +45,13 @@ public class BidsController {
         return bidsService.getHighestBidForAuctionItem(auctionItemId);
     }
 
-    // ✅ Place a new bid
-    @PostMapping
-    public Bids placeBid(@RequestBody Bids bid) {
-        return bidsService.placeBid(bid);
+    // ✅ Place a new bid using @RequestParam
+    @PostMapping("/add")
+    public Bids placeBid(
+            @RequestParam Long userId,
+            @RequestParam Long auctionItemId,
+            @RequestParam Long bidAmount) {
+        return bidsService.placeBid(userId, auctionItemId, bidAmount);
     }
 
     // ✅ Delete a bid
