@@ -1,84 +1,135 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BidEnd = () => {
-    const navigate = useNavigate();
-    const loggedInUserId = 1; // Logged-in user ID
+const OiledUpBid = () => {
+  const navigate = useNavigate();
+  const loggedInUserId = 1;
+  const auctionItemId = 1;
+  const [auctionItem, setAuctionItem] = useState(null);
+  const [highestBid, setHighestBid] = useState(0);
+  const [highestBidder, setHighestBidder] = useState(null);
+  const [newBid, setNewBid] = useState("");
+  const [auctionEnded, setAuctionEnded] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-    const [winner, setWinner] = useState(null);
-    const [userDetails, setUserDetails] = useState(null);
-    const [auctionItem, setAuctionItem] = useState(null);
-    const [expeditedShipping, setExpeditedShipping] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
-
-    useEffect(() => {
-        fetch("http://localhost:8080/api/winners/1")
-            .then(res => res.json())
-            .then(data => {
-                setWinner(data);
-                return Promise.all([
-                    fetch(`http://localhost:8080/api/user-details/details/${data.user.userId}`).then(res => res.json()),
-                    fetch(`http://localhost:8080/api/auction-items/${data.auctionItem.auctionItemId}`).then(res => res.json())
-                ]);
-            })
-            .then(([userDetails, auctionItem]) => {
-                setUserDetails(userDetails);
-                setAuctionItem(auctionItem);
-            })
-            .catch(() => setErrorMessage("Failed to load auction details."));
-    }, []);
-
-    const handlePaymentRedirect = () => {
-        const totalAmount = winner.winningPrice + 10 + (expeditedShipping ? 20 : 0);
-
-        navigate("/payment", {
-            state: {
-                userId: loggedInUserId,
-                auctionItemId: winner.auctionItem.auctionItemId,
-                winner,
-                auctionItem,
-                userDetails,
-                expeditedShipping,
-                totalAmount
-            }
-        });
+  useEffect(() => {
+    const fetchAuction = () => {
+      fetch(`http://localhost:8080/api/auction-items/${auctionItemId}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Fetch failed");
+          return res.json();
+        })
+        .then((data) => {
+          setAuctionItem(data);
+          setHighestBid(data.highestBid || 0);
+          setHighestBidder(data.highestBidder || "No bids yet");
+          setAuctionEnded(data.auctionEnded || false);
+        })
+        .catch(() => setErrorMessage("Failed to load auction data"));
     };
 
-    if (errorMessage) return <p className="error-message">{errorMessage}</p>;
-    if (!winner || !userDetails || !auctionItem) return <p>Loading...</p>;
+    fetchAuction();
+    const interval = setInterval(fetchAuction, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
-    // Check if the logged-in user is the winner
-    const isUserWinner = loggedInUserId === winner.user.userId;
+  const handleBid = () => {
+    const bidAmount = parseFloat(newBid);
+    if (isNaN(bidAmount) || bidAmount <= highestBid) {
+      alert("Bid must be higher than the current highest bid");
+      return;
+    }
 
-    return (
-        <div className="bid-end-container">
-            <h1>Auction Ended</h1>
-            <p>Winner: {userDetails.firstName} {userDetails.lastName} (Username: {winner.user.username})</p>
+    fetch("http://localhost:8080/api/bids", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: loggedInUserId,
+        auctionItemId: auctionItemId,
+        bidAmount: bidAmount,
+        bidTime: new Date().toISOString(),
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Bid failed");
+        return res.json();
+      })
+      .then((data) => {
+        setHighestBid(data.bidAmount);
+        setHighestBidder(data.user.username);
+        setNewBid("");
+      })
+      .catch(() => {
+        setErrorMessage("Bid submission failed");
+        setTimeout(() => setErrorMessage(""), 3000);
+      });
+  };
 
-            {isUserWinner ? (
-                <p className="winner-message">You are the winner! Proceed to payment.</p>
-            ) : (
-                <p className="error-message"> You did not win this auction.</p>
-            )}
+  const handleBuyNow = () => {
+    fetch(`http://localhost:8080/api/auction-items/${auctionItemId}/buy-now`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: loggedInUserId }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Buy Now failed");
+        setAuctionEnded(true);
+        navigate("/bid-end");
+      })
+      .catch(() => {
+        setErrorMessage("Failed to complete purchase");
+        setTimeout(() => setErrorMessage(""), 3000);
+      });
+  };
 
-            <div className="payment-section">
-                <h2>Order Summary</h2>
-                <p><strong>Item Name:</strong> {auctionItem.itemName}</p>
-                <p><strong>Description:</strong> {auctionItem.itemDescription}</p>
-                <p><strong>Final Price:</strong> ${winner.winningPrice}</p>
-                <p>Standard Shipping: $10</p>
+  if (errorMessage) return <p className="error-message text-red-500">{errorMessage}</p>;
+  if (!auctionItem) return <p>Loading auction data...</p>;
 
-                <label>
-                    <input type="checkbox" checked={expeditedShipping} onChange={() => setExpeditedShipping(!expeditedShipping)} />
-                    Add Expedited Shipping (+$20)
-                </label>
+  return (
+    <div className="p-4 border rounded-lg bg-white shadow-md max-w-md mx-auto">
+      <h2 className="text-xl font-bold">{auctionItem.itemName}</h2>
+      <p>{auctionItem.itemDescription}</p>
 
-                <h3>Total: ${winner.winningPrice + 10 + (expeditedShipping ? 20 : 0)}</h3>
+      <div className="mt-4 p-4 border rounded bg-gray-100">
+        <p>
+          <strong>Highest Bid:</strong> ${highestBid.toFixed(2)}
+        </p>
+        <p>
+          <strong>Highest Bidder:</strong> {highestBidder}
+        </p>
+      </div>
 
-                <button onClick={handlePaymentRedirect} disabled={!isUserWinner}>Pay Now</button>
-            </div>
+      {auctionEnded ? (
+        <p className="mt-4 text-red-500 font-bold">Auction has ended.</p>
+      ) : (
+        <div className="mt-4">
+          <input
+            type="number"
+            step="0.01"
+            min={highestBid + 0.01}
+            className="border p-2 rounded w-full"
+            placeholder={`Enter bid > $${highestBid.toFixed(2)}`}
+            value={newBid}
+            onChange={(e) => setNewBid(e.target.value)}
+          />
+          <button
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded w-full disabled:bg-gray-400"
+            onClick={handleBid}
+            disabled={!newBid || parseFloat(newBid) <= highestBid}
+          >
+            Bid
+          </button>
+
+          <button
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded w-full"
+            onClick={handleBuyNow}
+          >
+            Buy Now ${auctionItem.buyNowPrice?.toFixed(2) || "N/A"}
+          </button>
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
-export default BidEnd;
+export default OiledUpBid;
