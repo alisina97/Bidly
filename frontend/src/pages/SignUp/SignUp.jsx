@@ -48,6 +48,9 @@ function SignUp() {
     if (!username || !email || !firstName || !lastName || !streetName || !streetNumber || !city || !finalCountry || !postalCode || !password || !confirmPassword) {
       setError("Please fill in all required fields.");
       return;
+    } else if (password == !confirmPassword){
+      setError("Password mismatch. Remember to insert your password and confirm your password with the same password.");
+      return;
     }
 
     try {
@@ -116,12 +119,12 @@ function SignUp() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
               />
-              <PasswordInput 
+              <input 
                 name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)} 
               />
-              <PasswordInput 
+              <input 
                 name="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
