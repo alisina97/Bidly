@@ -22,8 +22,9 @@ public class AuctionItemController {
                                       @RequestParam Double startingPrice,
                                       @RequestParam Double buyNowPrice,
                                       @RequestParam Long auctionTypeId,
-                                      @RequestParam Long categoryId) {
-        return auctionItemService.addAuctionItem(itemName, itemDescription, startingPrice, buyNowPrice, auctionTypeId, categoryId);
+                                      @RequestParam Long categoryId,
+                                      @RequestParam Long userId) {  // Added userId
+        return auctionItemService.addAuctionItem(itemName, itemDescription, startingPrice, buyNowPrice, auctionTypeId, categoryId, userId);
     }
 
     // ✅ Get all auction items
@@ -44,6 +45,12 @@ public class AuctionItemController {
         return auctionItemService.getItemsByCategory(categoryId);
     }
 
+    // ✅ Get items by user ID
+    @GetMapping("/user/{userId}")
+    public List<AuctionItem> getItemsByUser(@PathVariable Long userId) {
+        return auctionItemService.getItemsByUser(userId);
+    }
+
     // ✅ Get auction item by ID
     @GetMapping("/{auctionItemId}")
     public ResponseEntity<?> getAuctionItemById(@PathVariable Long auctionItemId) {
@@ -53,7 +60,6 @@ public class AuctionItemController {
         }
         return ResponseEntity.ok(item);
     }
-
 
     // ✅ Search items by keyword
     @GetMapping("/search")
