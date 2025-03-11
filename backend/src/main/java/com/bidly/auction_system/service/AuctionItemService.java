@@ -3,9 +3,11 @@ package com.bidly.auction_system.service;
 import com.bidly.auction_system.model.AuctionItem;
 import com.bidly.auction_system.model.AuctionType;
 import com.bidly.auction_system.model.Category;
+import com.bidly.auction_system.model.Users;
 import com.bidly.auction_system.repository.AuctionItemRepository;
 import com.bidly.auction_system.repository.AuctionTypeRepository;
 import com.bidly.auction_system.repository.CategoryRepository;
+import com.bidly.auction_system.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +25,19 @@ public class AuctionItemService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    // ✅ Add a new auction item
-    public AuctionItem addAuctionItem(String itemName, String itemDescription, Double startingPrice, Double buyNowPrice, Long auctionTypeId, Long categoryId) {
-        AuctionType auctionType = auctionTypeRepository.findById(auctionTypeId).orElseThrow(() -> new RuntimeException("Auction Type not found!"));
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new RuntimeException("Category not found!"));
+    @Autowired
+    private UsersRepository usersRepository; // Added repository for Users
 
-        AuctionItem item = new AuctionItem(itemName, itemDescription, startingPrice, buyNowPrice, auctionType, category);
+    // ✅ Add a new auction item
+    public AuctionItem addAuctionItem(String itemName, String itemDescription, Double startingPrice, Double buyNowPrice, Long auctionTypeId, Long categoryId, Long userId) {
+        AuctionType auctionType = auctionTypeRepository.findById(auctionTypeId)
+                .orElseThrow(() -> new RuntimeException("Auction Type not found!"));
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found!"));
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found!")); // Fetch user
+
+        AuctionItem item = new AuctionItem(itemName, itemDescription, startingPrice, buyNowPrice, auctionType, category, user);
         return auctionItemRepository.save(item);
     }
 
@@ -47,13 +56,17 @@ public class AuctionItemService {
         return auctionItemRepository.findByCategoryCategoryId(categoryId);
     }
 
+    // ✅ Get auction items by user ID
+    public List<AuctionItem> getItemsByUser(Long userId) {
+        return auctionItemRepository.findByUserUserId(userId);
+    }
 
+    // ✅ Get auction item by ID
     public AuctionItem getAuctionItemById(Long auctionItemId) {
         return auctionItemRepository.findById(auctionItemId).orElse(null);
     }
 
-
-
+    // ✅ Search auction items by keyword
     public List<AuctionItem> searchAuctionItems(String keyword) {
         return auctionItemRepository.searchAuctionItems(keyword);
     }

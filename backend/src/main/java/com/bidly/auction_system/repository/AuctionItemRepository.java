@@ -16,6 +16,9 @@ public interface AuctionItemRepository extends JpaRepository<AuctionItem, Long> 
     // ✅ Get all items by category
     List<AuctionItem> findByCategoryCategoryId(Long categoryId);
 
+    // ✅ Get all items by user ID
+    List<AuctionItem> findByUserUserId(Long userId); // Added method to filter by userId
+
     // ✅ Search items by name or description
     @Query("SELECT a FROM AuctionItem a WHERE " +
             "LOWER(a.itemName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
