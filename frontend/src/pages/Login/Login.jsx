@@ -6,8 +6,8 @@ import axiosInstance from '../../utils/axiosinstance';
 
 function Login() {
 
-  const [username, setUsername] = useState('demo@example.com');
-  const [password, setPassword] = useState('password123');
+  const [username, setUsername] = useState(null);
+  const [password, setPassword] = useState(null);
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
@@ -16,12 +16,12 @@ function Login() {
     e.preventDefault();
   
     if (!username) {
-      setError("Please enter the username.");
+      setError("A username is required to login");
       return;
     }
   
     if (!password) {
-      setError("Please enter the password.");
+      setError("Invalid username or password. Please try again.");
       return;
     }
   
@@ -52,7 +52,7 @@ function Login() {
         <form onSubmit={handleLogin}>
           <h4 className='text-2xl mb-7'>Login</h4>
           
-          <input type='text' placeholder='username' className='input-box' value={username} onChange={(e) => setUsername(e.target.value)} />
+          <input type='text' placeholder='Username' className='input-box' value={username} onChange={(e) => setUsername(e.target.value)} />
           <PasswordInput 
             value={password}
             onChange={(e) => setPassword(e.target.value)}/>
@@ -61,8 +61,8 @@ function Login() {
           <button type='submit' className='btn-primary'>Login</button>
 
           <p className='text-sm text-center mt-4'>
-            Not registered? {" "}
-            <Link to={"/SignUp"} className='font-medium text-primary underline'>Create an Account</Link>
+            Not a Bidlier? {" "}
+            <Link to={"/SignUp"} className='font-medium text-primary underline'>Sign Up Now!</Link>
           </p>
         </form>
       </div>
