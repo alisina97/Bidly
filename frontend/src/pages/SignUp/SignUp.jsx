@@ -122,13 +122,16 @@ function SignUp() {
               <input 
                 name="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)} 
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="input-box w-full"
               />
               <input 
                 name="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm Password" // Added for consistency
+                className="input-box w-full"
               />
             </div>
 
