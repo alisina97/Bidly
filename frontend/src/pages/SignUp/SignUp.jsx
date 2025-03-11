@@ -8,6 +8,7 @@ function SignUp() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
@@ -44,7 +45,7 @@ function SignUp() {
 
     const finalCountry = country === "Other" ? customCountry : country; // Use custom country if selected
 
-    if (!username || !email || !firstName || !lastName || !streetName || !streetNumber || !city || !finalCountry || !postalCode || !password) {
+    if (!username || !email || !firstName || !lastName || !streetName || !streetNumber || !city || !finalCountry || !postalCode || !password || !confirmPassword) {
       setError("Please fill in all required fields.");
       return;
     }
@@ -120,11 +121,17 @@ function SignUp() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)} 
               />
+              <PasswordInput 
+                name="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm Password" // Added for consistency
+              />
             </div>
 
             {/* Right Column */}
             <div>
-            <input
+              <input
                 type="text"
                 placeholder="Street Number"
                 className="input-box w-full"

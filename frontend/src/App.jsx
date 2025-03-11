@@ -15,6 +15,7 @@ function App() {
         <Route path='/login' exact element={<Login/>} />
         <Route path='/signup' exact element={<SignUp/>} />
         <Route path="/payment" exact element ={<PaymentPage/>} />
+        <Route path="/auctionbidding" exact element ={<oiledUpNBid/>} />
         <Route path='/bidend' exact element ={<BidEnd/>} />
       </Routes>
     </Router>
