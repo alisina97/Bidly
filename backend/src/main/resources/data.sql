@@ -33,10 +33,10 @@ INSERT INTO categories (category_name) VALUES
                                            ('Vehicles');
 
 -- Insert Auction Items
-INSERT INTO auction_items (item_name, item_description, starting_price, buy_now_price, auction_type_id, category_id) VALUES
-                                                                                                                         ('iPhone 14', 'Latest model in excellent condition', 600.00, 850.00, 1, 1),
-                                                                                                                         ('Sofa Set', 'Comfortable 3-piece sofa set', 250.00, 500.00, 2, 2),
-                                                                                                                         ('Toyota Camry', '2018 model, low mileage', 12000.00, 15000.00, 3, 3);
+INSERT INTO auction_items (item_name, item_description, starting_price, buy_now_price, auction_type_id, category_id, user_id) VALUES
+                                                                                                                         ('iPhone 14', 'Latest model in excellent condition', 600.00, 850.00, 1, 1, 1),
+                                                                                                                         ('Sofa Set', 'Comfortable 3-piece sofa set', 250.00, 500.00, 2, 2, 1),
+                                                                                                                         ('Toyota Camry', '2018 model, low mileage', 12000.00, 15000.00, 3, 3, 2);
 
 -- Insert Auction Status
 INSERT INTO auction_status (auction_item_id, current_price, remaining_time, item_status) VALUES
@@ -51,3 +51,7 @@ INSERT INTO bids (auction_item_id, user_id, bid_amount, bid_time) VALUES
                                                                       (2, 1, 275, '2025-03-02 14:45:00'),
                                                                       (3, 2, 12500, '2025-03-03 09:00:00'),
                                                                       (3, 3, 13000, '2025-03-03 11:00:00');
+                                                                      
+-- Insert Winner                                                               
+INSERT INTO public.winners(auction_item_id, user_id, winner_id, winning_price)VALUES 
+																				 (1, 1, 1, 200.00);
