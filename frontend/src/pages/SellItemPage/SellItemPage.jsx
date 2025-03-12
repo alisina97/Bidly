@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Navbar from "../../components/Navbar/Navbar";
 
 const CreateAuctionPage = () => {
 	// State to hold auction form data
-	const userId = 1; // hard code user ID
+	const [userId, setUserId] = useState(null); // Store user ID from session
 	const [itemName, setItemName] = useState("");
 	const [itemDescription, setItemDescription] = useState("");
 	const [startingPrice, setStartingPrice] = useState("");
@@ -21,6 +22,7 @@ const CreateAuctionPage = () => {
 		dutch: 2,    // Dutch Auction (Buy Now)
 	};
 
+
 	// Fetch categories from backend on component mount
 	useEffect(() => {
 		const fetchCategories = async () => {
@@ -35,9 +37,30 @@ const CreateAuctionPage = () => {
 		fetchCategories();
 	}, []);
 
+
+	useEffect(() => {
+		const fetchUserSession = async () => {
+			try {
+				const response = await axios.get("http://localhost:8080/api/users/me", {
+					withCredentials: true,
+				});
+				setUserId(response.data.user_id); // ✅ Store user ID in state
+			} catch (err) {
+				setError("User session not found. Please log in.");
+			}
+		};
+		fetchUserSession();
+	}, []);
+
+
 	const handleSubmit = async (event) => {
 		event.preventDefault();
 
+
+		if (!userId) {
+			setError("User session not found. Please log in.");
+			return;
+		}
 		// Validate required fields
 		if (!itemName || !itemDescription || !startingPrice || !auctionEndDate || !category) {
 			setError("Please fill in all fields.");
@@ -80,8 +103,7 @@ const CreateAuctionPage = () => {
 		auctionData.append("auctionTypeId", auctionTypeMap[auctionType]);
 		auctionData.append("categoryId", category);
 		auctionData.append("auctionEndDate", auctionEndDate);
-		auctionData.append("userId", userId);
-
+		auctionData.append("userId", userId); // ✅ FIX: Ensure user ID is included
 		try {
 			// Send auction data to the backend
 			
@@ -118,6 +140,7 @@ const CreateAuctionPage = () => {
 
 	return (
 		<div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
+			<Navbar></Navbar>
 			<h2>Create Auction</h2>
 
 			<form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>

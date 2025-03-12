@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../../components/Navbar/Navbar'
 
 const UserAuctionsPage = () => {
   const userId = 1; // Hardcoded user ID
@@ -23,6 +24,7 @@ const UserAuctionsPage = () => {
 
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
+      <Navbar></Navbar>
       <h2>Your Auctions</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {auctions.length > 0 ? (
