@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import Navbar from '../../components/Navbar/Navbar'
 import PasswordInput from '../../components/Input/PasswordInput'
 import axiosInstance from '../../utils/axiosinstance';
 
@@ -39,6 +38,8 @@ function Login() {
       }, { withCredentials: true });  // ✅ Store session cookies
 
       if (response.status === 200) {
+        await axiosInstance.get("/api/users/me", { withCredentials: true });
+
         navigate('/home');  // ✅ Redirect on success
       } else {
         setError("Unexpected response from the server.");

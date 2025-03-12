@@ -50,10 +50,10 @@ public class UsersController {
     }
 
     //  Get user by email
-    @GetMapping("/email")
-    public Optional<Users> getUserByEmail(@RequestParam String email) {
-        return userService.getUserByEmail(email);
-    }
+    // @GetMapping("/email")
+    // public Optional<Users> getUserByEmail(@RequestParam String email) {
+    //     return userService.getUserByEmail(email);
+    // }
     
     @GetMapping("/{userId}")
     public ResponseEntity<?> getUserById(@PathVariable Long userId) {
