@@ -72,7 +72,7 @@ const OiledUpBid = () => {
       body: JSON.stringify({ userId: loggedInUserId }),
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Buy Now failed");
+        if (!res.ok) throw new Error("Buy Now failed, Unknown error");
         setAuctionEnded(true);
         navigate("/bid-end");
       })
@@ -118,13 +118,6 @@ const OiledUpBid = () => {
             disabled={!newBid || parseFloat(newBid) <= highestBid}
           >
             Bid
-          </button>
-
-          <button
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded w-full"
-            onClick={handleBuyNow}
-          >
-            Buy Now ${auctionItem.buyNowPrice?.toFixed(2) || "N/A"}
           </button>
         </div>
       )}
