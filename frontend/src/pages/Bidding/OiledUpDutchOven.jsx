@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Navbar from '../../components/Navbar/Navbar'
+
 
 const OiledDutchOven = () => {
   const navigate = useNavigate();
@@ -111,6 +113,8 @@ const OiledDutchOven = () => {
 
   return (
     <div className="p-4 border rounded-lg bg-white shadow-md max-w-md mx-auto">
+           <Navbar />  
+
       <h2 className="text-xl font-bold">{auctionItem.itemName}</h2>
       <p>{auctionItem.itemDescription}</p>
 
