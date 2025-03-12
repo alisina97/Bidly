@@ -70,4 +70,15 @@ public class AuctionItemService {
     public List<AuctionItem> searchAuctionItems(String keyword) {
         return auctionItemRepository.searchAuctionItems(keyword);
     }
+    
+    public AuctionItem updateAuctionItem(Long auctionItemId, AuctionItem updatedAuctionItem) {
+        // Find the existing auction item by ID
+        AuctionItem existingAuctionItem = auctionItemRepository.findByAuctionItemId(auctionItemId);
+
+        // Update buy now price
+        existingAuctionItem.setBuyNowPrice(updatedAuctionItem.getBuyNowPrice());
+
+        // Save and return the updated auction item
+        return auctionItemRepository.save(existingAuctionItem);
+    }
 }
