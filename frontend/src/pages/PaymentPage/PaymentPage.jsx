@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+
 
 const PaymentPage = () => {
     const location = useLocation();
-    const { userId, auctionItemId, winner, auctionItem, userDetails, expeditedShipping, totalAmount } = location.state || {};
+    const navigate = useNavigate();  // Initialize navigate hook
+
+    const {  userId, auctionItemId, winner, auctionItem, userDetails, expeditedShipping, totalAmount } = location.state || {};
 
     const [paymentDetails, setPaymentDetails] = useState(null);
     const [error, setError] = useState("");
@@ -34,6 +37,33 @@ const PaymentPage = () => {
         });
     }, [userId, auctionItemId]);
 
+    // Handle payment submission
+    const handlePayment = () => {
+        // Simulate a successful payment process
+		
+		const arrivalDate = new Date();
+		arrivalDate.setDate(arrivalDate.getDate() + 3);
+		const formattedArrivalDate = arrivalDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+		
+        const receiptData = {
+            firstName: paymentDetails.firstName,
+            lastName: paymentDetails.lastName,
+            streetNumber: paymentDetails.streetNumber,
+            streetName: paymentDetails.streetName,
+            city: paymentDetails.city,
+            province: paymentDetails.province,
+            country: paymentDetails.country,
+            postalCode: paymentDetails.postalCode || "N/A",
+            totalAmountPaid: totalAmount, 
+            arrivalDate: formattedArrivalDate, 
+            itemId: auctionItemId,
+            itemName: auctionItem?.name || "Auction Item",
+        };
+
+        navigate("/receipt", { state: receiptData }); // Navigate with data
+    };
+
     return (
         <div style={{ textAlign: "center", padding: "20px", maxWidth: "900px", margin: "auto" }}>
             <h2>Payment Details</h2>
@@ -59,7 +89,7 @@ const PaymentPage = () => {
 
                             <h3>Item Details</h3>
                             <p><strong>Total Price:</strong> ${totalAmount}</p>
-                            </>
+                        </>
                     ) : (
                         <p>Loading payment details...</p>
                     )}
@@ -73,7 +103,7 @@ const PaymentPage = () => {
                     <input type="text" placeholder="Expiry Date (MM/YY)" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} style={{ width: "100%", padding: "8px", marginBottom: "10px" }} />
                     <input type="text" placeholder="Security Code (CVV)" value={securityCode} onChange={(e) => setSecurityCode(e.target.value)} style={{ width: "100%", padding: "8px", marginBottom: "10px" }} />
 
-                    <button style={{ backgroundColor: "green", color: "white", padding: "10px", border: "none", borderRadius: "5px", cursor: "pointer", width: "100%" }}>
+                    <button onClick={handlePayment} style={{ backgroundColor: "green", color: "white", padding: "10px", border: "none", borderRadius: "5px", cursor: "pointer", width: "100%" }}>
                         Proceed to Payment
                     </button>
                 </div>
