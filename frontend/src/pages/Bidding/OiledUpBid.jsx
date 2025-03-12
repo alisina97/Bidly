@@ -3,14 +3,27 @@ import { useNavigate } from "react-router-dom";
 
 const OiledUpBid = () => {
   const navigate = useNavigate();
-  const loggedInUserId = 1;
   const auctionItemId = 1;
+  const [loggedInUserId, setLoggedInUserId] = useState(null); // ✅ Fetch from session
   const [auctionItem, setAuctionItem] = useState(null);
   const [highestBid, setHighestBid] = useState(0);
   const [highestBidder, setHighestBidder] = useState(null);
   const [newBid, setNewBid] = useState("");
   const [auctionEnded, setAuctionEnded] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/users/me", { credentials: "include" })
+      .then((res) => {
+        if (!res.ok) throw new Error("User session not found.");
+        return res.json();
+      })
+      .then((data) => {
+        setLoggedInUserId(data.user_id); // ✅ Store session user ID
+      })
+      .catch(() => setErrorMessage("User session not found. Please log in."));
+  }, []);
 
   useEffect(() => {
     const fetchAuction = () => {
@@ -34,6 +47,10 @@ const OiledUpBid = () => {
   }, []);
 
   const handleBid = () => {
+    if (!loggedInUserId) {
+      setErrorMessage("User session not found. Please log in.");
+      return;
+  }
     const bidAmount = parseFloat(newBid);
     if (isNaN(bidAmount) || bidAmount <= highestBid) {
       alert("Bid must be higher than the current highest bid");
@@ -66,6 +83,13 @@ const OiledUpBid = () => {
   };
 
   const handleBuyNow = () => {
+
+    if (!loggedInUserId) {
+      setErrorMessage("User session not found. Please log in.");
+      return;
+    }
+
+
     fetch(`http://localhost:8080/api/auction-items/${auctionItemId}/buy-now`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
