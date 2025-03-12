@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../../components/Navbar/Navbar";
 import PasswordInput from "../../components/Input/PasswordInput";
 import axiosInstance from "../../utils/axiosinstance";
 import { Link, useNavigate } from "react-router-dom";
@@ -84,7 +83,7 @@ function SignUp() {
 
   return (
     <>
-      <Navbar />
+      
       <div className="flex items-center justify-center mt-20">
         <div className="w-[600px] border rounded bg-white px-7 py-10">
           <h4 className="text-2xl mb-7 text-center">Sign Up</h4>
