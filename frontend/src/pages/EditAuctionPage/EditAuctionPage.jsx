@@ -5,10 +5,8 @@ import Navbar from '../../components/Navbar/Navbar'
 
 
 const EditAuctionPage = () => {
-  // Uncomment below when done testing
   const { auctionId } = useParams();
   const navigate = useNavigate();
-
   const [auctionItem, setAuctionItem] = useState(null);
   const [error, setError] = useState('');
   const [newBuyNowPrice, setNewBuyNowPrice] = useState('');
