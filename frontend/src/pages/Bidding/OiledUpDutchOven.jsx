@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const OiledDutchOven = () => {
+const OiledUpDutchOven = () => {
   const navigate = useNavigate();
   const loggedInUserId = 1;
   const auctionItemId = 1;
