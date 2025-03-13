@@ -4,12 +4,28 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar'
 
 const UserAuctionsPage = () => {
-  const userId = 1; // Hardcoded user ID
+  const [userId, setUserId] = useState(null); // Store user ID from session
   const navigate = useNavigate();
   const [auctions, setAuctions] = useState([]);
   const [error, setError] = useState('');
+  
+  
+  useEffect(() => {
+  	const fetchUserSession = async () => {
+  		try {
+  			const response = await axios.get("http://localhost:8080/api/users/me", {
+  				withCredentials: true,
+  			});
+  			setUserId(response.data.user_id); // ✅ Store user ID in state
+  		} catch (err) {
+  			setError("User session not found. Please log in.");
+  		}
+  	};
+  	fetchUserSession();
+  }, []);
 
   useEffect(() => {
+	if (!userId) return; // Ensure userId is set before fetching auctions
     const fetchUserAuctions = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/auction-items/user/${userId}`);
