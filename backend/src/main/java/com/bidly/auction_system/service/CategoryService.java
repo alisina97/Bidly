@@ -14,7 +14,7 @@ public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    // ✅ Add a new category
+    // Add a new category
     public Category addCategory(String categoryName) {
         Optional<Category> existingCategory = categoryRepository.findByCategoryName(categoryName);
         if (existingCategory.isPresent()) {
@@ -24,12 +24,12 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    // ✅ Get all categories
+    // Get all categories
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
 
-    // ✅ Get a category by ID
+    // Get a category by ID
     public Category getCategoryById(Long categoryId) {
         return categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found!"));

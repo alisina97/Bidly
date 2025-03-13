@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserDetailsRepository extends JpaRepository<UserDetails, Long> {
-    // ✅ Find UserDetails by User ID
+    //  Find UserDetails by User ID
     UserDetails findByUserUserId(Long userId);
 }

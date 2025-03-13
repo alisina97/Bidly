@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Duration;
 
 @Entity
 @Data
@@ -24,10 +23,10 @@ public class AuctionStatus {
     private AuctionItem auctionItem;
 
     @Column(nullable = false, name = "current_price")
-    private Double currentPrice;
+    private Long currentPrice;
 
     @Column(nullable = false , name = "remaining_time")
-    private Duration remainingTime; // Time left for auction
+    private Long remainingTime; // Time left for auction
 
     @Enumerated(EnumType.STRING) // Store enum as a string
     @Column(nullable = false , name = "item_status")
@@ -35,7 +34,7 @@ public class AuctionStatus {
 
     public AuctionStatus() {}
 
-    public AuctionStatus(AuctionItem auctionItem, Double currentPrice, Duration remainingTime, ItemStatus itemStatus) {
+    public AuctionStatus(AuctionItem auctionItem, Long currentPrice, Long remainingTime, ItemStatus itemStatus) {
         this.auctionItem = auctionItem;
         this.currentPrice = currentPrice;
         this.remainingTime = remainingTime;
