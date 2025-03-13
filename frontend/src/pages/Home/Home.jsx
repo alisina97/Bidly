@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import axiosInstance from '../../utils/axiosinstance';
@@ -7,60 +8,74 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearch, setIsSearch] = useState(false);
   const [allAuctions, setAllAuctions] = useState([]);
-  const [selectedAuctionId, setSelectedAuctionId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+  const navigate = useNavigate();
 
-  const onSearchAuction = async (query) => {
+  useEffect(() => {
+    fetchAllAuctions();
+  }, [currentPage]);
+
+  const fetchAllAuctions = async () => {
     try {
-      const response = await axiosInstance.get("/api/auction-items/search", {
-        params: { keyword: query },
-      });
-
-      console.log("Search Response:", response.data);
-
-      if (response.data.length > 0) {
-        setIsSearch(true);
-        setAllAuctions(response.data);
-      } else {
-        setIsSearch(false);
-        setAllAuctions([]);
-        console.log("No auction items found.");
-      }
+      const response = await axiosInstance.get("/api/auction-items");
+      const auctionsWithDetails = await Promise.all(response.data.map(async (item) => {
+        try {
+          const statusResponse = await axiosInstance.get(`/api/auction-status/${item.auctionItemId}`);
+          const highestBidResponse = await axiosInstance.get(`/api/bids/auction/${item.auctionItemId}/highest`);
+          return { 
+            ...item, 
+            status: statusResponse.data.itemStatus, 
+            highestBid: highestBidResponse.data ? highestBidResponse.data.bidAmount || "N/A" : "N/A" 
+          };
+        } catch (error) {
+          console.error("Error fetching auction status or highest bid:", error);
+          return { ...item, status: "UNKNOWN", highestBid: "N/A" };
+        }
+      }));
+      setAllAuctions(auctionsWithDetails);
+      setIsSearch(true);
     } catch (error) {
-      console.error("Search API Error:", error);
+      console.error("Error fetching auctions:", error);
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (searchQuery.trim() !== "") {
-      onSearchAuction(searchQuery);
+      try {
+        const response = await axiosInstance.get("/api/auction-items/search", {
+          params: { keyword: searchQuery },
+        });
+        setIsSearch(true);
+        setAllAuctions(response.data);
+      } catch (error) {
+        console.error("Search API Error:", error);
+      }
     }
   };
 
   const handleClearSearch = () => {
     setIsSearch(false);
     setSearchQuery("");
-    setAllAuctions([]);
-    setSelectedAuctionId(null);
+    setCurrentPage(1);
+    fetchAllAuctions();
   };
 
-  const handleSelectAuction = (auctionItemId) => {
-    setSelectedAuctionId(auctionItemId);
+  const handleBid = (auctionItemId) => {
+    navigate(`/auction/bid/${auctionItemId}`);
   };
 
-  const handleBid = () => {
-    if (selectedAuctionId) {
-      console.log(`Placing bid for auction item ID: ${selectedAuctionId}`);
-      alert(`Bid placed for auction item ID: ${selectedAuctionId}`);
-    } else {
-      alert("Please select an auction item to bid.");
-    }
-  };
+  const totalPages = Math.ceil(allAuctions.length / itemsPerPage);
+  const paginatedAuctions = allAuctions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <>
       <Navbar />
       <div className='max-w-screen-xl mx-auto px-2'>
-        <h1 className='mb-6 mt-6'>Please search an item to start</h1>
+        <h1 className='mb-6 mt-6'>Browse Auctions</h1>
 
         <SearchBar 
           value={searchQuery} 
@@ -71,47 +86,52 @@ function Home() {
 
         {isSearch && (
           <div className="mt-5">
-            <h2 className="text-lg font-bold mb-3">Search Results</h2>
-            <table className="w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="border border-gray-300 px-4 py-2">Item Name</th>
-                  <th className="border border-gray-300 px-4 py-2">Current Price</th>
-                  <th className="border border-gray-300 px-4 py-2">Auction Type</th>
-                  <th className="border border-gray-300 px-4 py-2">Remaining Time</th>
-                  <th className="border border-gray-300 px-4 py-2">Select</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allAuctions.map((item) => (
-                  <tr key={item.auctionItemId} className="hover:bg-gray-100">
-                    <td className="border border-gray-300 px-4 py-2">{item.itemName}</td>
-                    <td className="border border-gray-300 px-4 py-2">${item.startingPrice}</td>
-                    <td className="border border-gray-300 px-4 py-2">{item.auctionType?.auctionTypeName || "Unknown"}</td>
-                    <td className="border border-gray-300 px-4 py-2">{item.remainingTime || "N/A"}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-center">
-                      <input 
-                        type="radio" 
-                        name="auctionSelection" 
-                        value={item.auctionItemId} 
-                        checked={selectedAuctionId === item.auctionItemId}
-                        onChange={() => handleSelectAuction(item.auctionItemId)}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <h2 className="text-lg font-bold mb-3">Auction Items</h2>
+            <div className="grid grid-cols-5 gap-4">
+              {paginatedAuctions.map((item) => (
+                <div key={item.auctionItemId} className="border p-4 rounded-lg shadow hover:shadow-md">
+                  <h3 className="font-semibold">{item.itemName}</h3>
+                  <p>Starting Price: ${item.startingPrice}</p>
+                  <p>Type: {item.auctionType?.auctionTypeName || "Unknown"}</p>
+                  {item.auctionType?.auctionTypeName === "Buy Now" && (
+                    <p>Buy Now Price: ${item.buyNowPrice || "N/A"}</p>
+                  )}
+                  <p>Highest Bid: ${item.highestBid || "N/A"}</p>
+                  {item.status === "SOLD" ? (
+                    <p className="text-red-500 font-bold">SOLD</p>
+                  ) : (
+                    <button 
+                      className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50" 
+                      onClick={() => handleBid(item.auctionItemId)}
+                      disabled={item.status === "SOLD"}
+                    >
+                      Bid
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
 
-            <button 
-              className="mt-3 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              onClick={handleBid}
-            >
-              Bid
-            </button>
+            <div className="flex justify-between items-center mt-4">
+              <button 
+                className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50" 
+                disabled={currentPage === 1} 
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                Previous
+              </button>
+              <span>Page {currentPage} of {totalPages}</span>
+              <button 
+                className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50" 
+                disabled={currentPage === totalPages} 
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
-        </div>
+      </div>
     </>
   );
 }
