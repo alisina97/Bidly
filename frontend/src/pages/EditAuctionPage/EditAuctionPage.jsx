@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import Navbar from '../../components/Navbar/Navbar'
+
 
 const EditAuctionPage = () => {
-  // Uncomment below when done testing
   const { auctionId } = useParams();
   const navigate = useNavigate();
-
   const [auctionItem, setAuctionItem] = useState(null);
   const [error, setError] = useState('');
   const [newBuyNowPrice, setNewBuyNowPrice] = useState('');
@@ -49,6 +49,7 @@ const EditAuctionPage = () => {
 
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
+      <Navbar></Navbar>
       <h1 style={{fontSize: '28px', marginBottom: '40px' }}><strong>Edit Auction</strong></h1>
 	  
       

@@ -9,10 +9,12 @@ import SellItemPage from './pages/SellItemPage/SellItemPage'
 import EditAuctionPage from './pages/EditAuctionPage/EditAuctionPage'
 import BidEnd from './pages/BidEnd/BidEnd'
 import UserAuctionCataloguePage from './pages/UserAuctionCataloguePage/UserAuctionCataloguePage'
+import AuctionPage from './pages/Bidding/OiledUpBid'
 
 function App() {
   const routes = (
     <Router>
+
       <Routes>
         <Route path='/' exact element={<Login/>} />
         <Route path='/home' exact element={<Home/>} />
@@ -23,6 +25,8 @@ function App() {
 		<Route path="/sell" exact element ={<SellItemPage/>} />
 		 <Route path="/edit/:auctionId" element={<EditAuctionPage />} />
         <Route path='/bidend' exact element ={<BidEnd/>} />
+        <Route path='/auction/bidding' exact element ={<AuctionPage/>} />
+
 		<Route path='/myAuctions/:userId' exact element ={<UserAuctionCataloguePage/>} />
       </Routes>
     </Router>

@@ -1,40 +1,46 @@
-import React, { useState } from 'react'
-import Navbar from '../../components/Navbar/Navbar'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import PasswordInput from '../../components/Input/PasswordInput'
 import axiosInstance from '../../utils/axiosinstance';
 
 function Login() {
-
-  const [username, setUsername] = useState(null);
-  const [password, setPassword] = useState(null);
-  const [error, setError] = useState(null);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
+  // ✅ Check if user is already logged in (session exists)
+  useEffect(() => {
+    axiosInstance.get("/api/users/me", { withCredentials: true })
+      .then(response => {
+        if (response.status === 200) {
+          navigate('/home');  // ✅ Redirect if already logged in
+        }
+      })
+      .catch(() => {}); // Ignore errors if user isn't logged in
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
-  
-    if (!username) {
-      setError("A username is required to login");
-      return;
-    }
-  
-    if (!password) {
+
+    if (!username || !password) {
       setError("Invalid username or password. Please try again.");
       return;
     }
-  
+
     setError("");
-  
+
     try {
       const response = await axiosInstance.post("/api/users/login", {
         username,
         password
-      });
-  
-      if (response.status === 200 && response.data === "Login Successful!") {
-        navigate('/home'); 
+      }, { withCredentials: true });  // ✅ Store session cookies
+
+      if (response.status === 200) {
+        await axiosInstance.get("/api/users/me", { withCredentials: true });
+
+        navigate('/home');  // ✅ Redirect on success
       } else {
         setError("Unexpected response from the server.");
       }
@@ -45,30 +51,26 @@ function Login() {
 
   return (
     <>
-    <Navbar />
+      <div className='flex items-center justify-center mt-28'>
+        <div className='w-96 border rounded bg-white px-7 py-10'>
+          <form onSubmit={handleLogin}>
+            <h4 className='text-2xl mb-7'>Login</h4>
 
-    <div className='flex items-center justify-center mt-28'>
-      <div className='w-96 border rounded bg-white px-7 py-10'>
-        <form onSubmit={handleLogin}>
-          <h4 className='text-2xl mb-7'>Login</h4>
-          
-          <input type='text' placeholder='Username' className='input-box' value={username} onChange={(e) => setUsername(e.target.value)} />
-          <PasswordInput 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}/>
+            <input type='text' placeholder='Username' className='input-box' value={username} onChange={(e) => setUsername(e.target.value)} />
+            <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} />
 
-          {error && <p className='text-red-500 text xs pb-1'>{error}</p> }  
-          <button type='submit' className='btn-primary'>Login</button>
+            {error && <p className='text-red-500 text-xs pb-1'>{error}</p>}  
+            <button type='submit' className='btn-primary'>Login</button>
 
-          <p className='text-sm text-center mt-4'>
-            Not a Bidlier? {" "}
-            <Link to={"/SignUp"} className='font-medium text-primary underline'>Sign Up Now!</Link>
-          </p>
-        </form>
+            <p className='text-sm text-center mt-4'>
+              Not a Bidlier? {" "}
+              <Link to={"/SignUp"} className='font-medium text-primary underline'>Sign Up Now!</Link>
+            </p>
+          </form>
+        </div>
       </div>
-    </div>
     </>
   )
 }
 
-export default Login
+export default Login;

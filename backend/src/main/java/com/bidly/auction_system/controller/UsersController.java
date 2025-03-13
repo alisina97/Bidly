@@ -6,6 +6,8 @@ import com.bidly.auction_system.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpSession;
+
 
 import java.util.List;
 import java.util.Map;
@@ -48,10 +50,10 @@ public class UsersController {
     }
 
     //  Get user by email
-    @GetMapping("/email")
-    public Optional<Users> getUserByEmail(@RequestParam String email) {
-        return userService.getUserByEmail(email);
-    }
+    // @GetMapping("/email")
+    // public Optional<Users> getUserByEmail(@RequestParam String email) {
+    //     return userService.getUserByEmail(email);
+    // }
     
     @GetMapping("/{userId}")
     public ResponseEntity<?> getUserById(@PathVariable Long userId) {
@@ -61,18 +63,36 @@ public class UsersController {
     }
     
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Map<String, String> credentials) {
+    public ResponseEntity<String> login(@RequestBody Map<String, String> credentials, HttpSession session) {
         String username = credentials.get("username");
         String password = credentials.get("password");
-
-        boolean isAuthenticated = userService.authenticateUser(username, password);
-
-        if (isAuthenticated) {
-            return ResponseEntity.ok("Login Successful!");  // ✅ HTTP 200 OK
-        } else {
-            return ResponseEntity.status(401).body("Invalid Username or Password");  // ❌ HTTP 401 Unauthorized
+    
+        Optional<Users> user = userService.findByUsernameAndPassword(username, password); // ✅ Fetch user directly
+    
+        if (user.isPresent()) {
+            session.setAttribute("user_id", user.get().getUserId()); // ✅ Store user_id in session
+            return ResponseEntity.ok("Login Successful! User ID stored in session.");
         }
+    
+        return ResponseEntity.status(401).body("Invalid Username or Password");
     }
+
+    @GetMapping("/me")
+public ResponseEntity<?> getLoggedInUserId(HttpSession session) {
+    Object userIdObj = session.getAttribute("user_id");
+
+    if (userIdObj == null) {
+        return ResponseEntity.status(401).body("User session not found.");
+    }
+
+    return ResponseEntity.ok(Map.of("user_id", userIdObj));
+}
+
+@PostMapping("/logout")
+public ResponseEntity<String> logout(HttpSession session) {
+    session.invalidate();  // ✅ Clears session data
+    return ResponseEntity.ok("User logged out successfully.");
+}
 
 
 }

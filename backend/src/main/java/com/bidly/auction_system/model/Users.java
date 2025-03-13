@@ -2,35 +2,39 @@ package com.bidly.auction_system.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@Table(name = "Users", uniqueConstraints = {
+@NoArgsConstructor  // Auto-generates a default constructor
+@Table(name = "users", uniqueConstraints = {
     @UniqueConstraint(columnNames = "email"),
     @UniqueConstraint(columnNames = "username")
 })
 public class Users {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment user_id (PK)
-    @Column(name = "user_id")
-    private Long userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long userId;  // ✅ Ensure `userId` is used instead of `id`
 
-    @Column(nullable = false, unique = true, name = "username") // Unique username
+    @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false, unique = true, name = "email") // Unique email
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false, name = "password") // Password (hashed in real apps)
-    private String password;
+    @Column(nullable = false)
+    private String password; // Store hashed passwords in real applications
 
-    // Default constructor
-    public Users() {}
-
+    // Custom constructor
     public Users(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
+    }
+
+    // ✅ Manually add a getter for `userId` if needed
+    public Long getUserId() {
+        return userId;
     }
 }
