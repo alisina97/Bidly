@@ -10,19 +10,19 @@ import java.util.List;
 
 @Repository
 public interface AuctionItemRepository extends JpaRepository<AuctionItem, Long> {
-    // ✅ Get all items by auction type
+    //  Get all items by auction type
     List<AuctionItem> findByAuctionTypeAuctionTypeId(Long auctionTypeId);
 
-    // ✅ Get all items by category
+    //  Get all items by category
     List<AuctionItem> findByCategoryCategoryId(Long categoryId);
     
-    // ✅ Get item by auction id
+    //  Get item by auction id
     AuctionItem findByAuctionItemId(Long auctionItemId);
 
-    // ✅ Get all items by user ID
+    //  Get all items by user ID
     List<AuctionItem> findByUserUserId(Long userId); // Added method to filter by userId
 
-    // ✅ Search items by name or description
+    //  Search items by name or description
     @Query("SELECT a FROM AuctionItem a WHERE " +
             "LOWER(a.itemName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(a.itemDescription) LIKE LOWER(CONCAT('%', :keyword, '%'))")

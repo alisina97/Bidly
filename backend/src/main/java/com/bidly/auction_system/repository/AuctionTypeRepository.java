@@ -7,6 +7,6 @@ import java.util.Optional;
 
 @Repository
 public interface AuctionTypeRepository extends JpaRepository<AuctionType, Long> {
-    // ✅ Find auction type by name (useful for checking if it exists before adding)
+    //  Find auction type by name 
     Optional<AuctionType> findByAuctionTypeName(String auctionTypeName);
 }

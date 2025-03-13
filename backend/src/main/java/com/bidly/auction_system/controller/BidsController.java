@@ -3,6 +3,7 @@ package com.bidly.auction_system.controller;
 import com.bidly.auction_system.model.Bids;
 import com.bidly.auction_system.service.BidsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,42 +22,65 @@ public class BidsController {
         return bidsService.getAllBids();
     }
 
-    // ✅ Get a bid by ID
+    //  Get a bid by ID
     @GetMapping("/{bidId}")
     public Optional<Bids> getBidById(@PathVariable Long bidId) {
         return bidsService.getBidById(bidId);
     }
 
-    // ✅ Get all bids for a specific auction item
+    //  Get all bids for a specific auction item
     @GetMapping("/auction/{auctionItemId}")
     public List<Bids> getBidsForAuctionItem(@PathVariable Long auctionItemId) {
         return bidsService.getBidsForAuctionItem(auctionItemId);
     }
+    
 
-    // ✅ Get all bids placed by a user
     @GetMapping("/user/{userId}")
     public List<Bids> getBidsByUser(@PathVariable Long userId) {
         return bidsService.getBidsByUser(userId);
     }
+    
 
-    // ✅ Get the highest bid for an auction item
+    //  Get the highest bid for an auction item
     @GetMapping("/auction/{auctionItemId}/highest")
     public Optional<Bids> getHighestBidForAuctionItem(@PathVariable Long auctionItemId) {
         return bidsService.getHighestBidForAuctionItem(auctionItemId);
     }
+    
 
-    // ✅ Place a new bid using @RequestParam
+//place a bid
     @PostMapping("/add")
-    public Bids placeBid(
+    public ResponseEntity<?> placeBid(
             @RequestParam Long userId,
             @RequestParam Long auctionItemId,
             @RequestParam Long bidAmount) {
-        return bidsService.placeBid(userId, auctionItemId, bidAmount);
+        try {
+            Bids newBid = bidsService.placeBid(userId, auctionItemId, bidAmount);
+            return ResponseEntity.ok(newBid);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+    
 
-    // ✅ Delete a bid
+    //  Delete a bid
     @DeleteMapping("/{bidId}")
     public void deleteBid(@PathVariable Long bidId) {
         bidsService.deleteBid(bidId);
     }
+
+
+    @PostMapping("/buy-now")
+    public ResponseEntity<?> buyNow(
+            @RequestParam Long userId,
+            @RequestParam Long auctionItemId) {
+        try {
+            Bids buyNowBid = bidsService.buyNow(userId, auctionItemId);
+            return ResponseEntity.ok(buyNowBid);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+
 }

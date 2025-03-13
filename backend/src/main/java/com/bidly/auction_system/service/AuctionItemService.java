@@ -29,7 +29,7 @@ public class AuctionItemService {
     private UsersRepository usersRepository; // Added repository for Users
 
     // ✅ Add a new auction item
-    public AuctionItem addAuctionItem(String itemName, String itemDescription, Double startingPrice, Double buyNowPrice, Long auctionTypeId, Long categoryId, Long userId) {
+    public AuctionItem addAuctionItem(String itemName, String itemDescription, Long startingPrice, Long buyNowPrice, Long auctionTypeId, Long categoryId, Long userId) {
         AuctionType auctionType = auctionTypeRepository.findById(auctionTypeId)
                 .orElseThrow(() -> new RuntimeException("Auction Type not found!"));
         Category category = categoryRepository.findById(categoryId)
@@ -70,6 +70,18 @@ public class AuctionItemService {
     public List<AuctionItem> searchAuctionItems(String keyword) {
         return auctionItemRepository.searchAuctionItems(keyword);
     }
+
+    public Long getBuyNowPrice(Long auctionItemId) {
+        AuctionItem item = auctionItemRepository.findById(auctionItemId)
+                .orElseThrow(() -> new RuntimeException("Auction item not found!"));
+    
+        if (item.getBuyNowPrice() == null) {
+            throw new RuntimeException("Buy Now price is not set for this auction item.");
+        }
+    
+        return item.getBuyNowPrice();
+    }
+    
     
     public AuctionItem updateAuctionItem(Long auctionItemId, AuctionItem updatedAuctionItem) {
         // Find the existing auction item by ID

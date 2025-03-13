@@ -15,7 +15,7 @@ public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;  // ✅ Ensure `userId` is used instead of `id`
+    private Long userId;  
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -33,7 +33,6 @@ public class Users {
         this.password = password;
     }
 
-    // ✅ Manually add a getter for `userId` if needed
     public Long getUserId() {
         return userId;
     }

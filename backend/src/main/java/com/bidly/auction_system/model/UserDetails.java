@@ -20,7 +20,7 @@ public class UserDetails {
     private Users user;
 
     @OneToOne
-    @JoinColumn(name = "address_id", nullable = false) // ✅ FK linking to Address
+    @JoinColumn(name = "address_id", nullable = false) // 
     private Address address;
     
     @Column(nullable = false, name = "first_name")

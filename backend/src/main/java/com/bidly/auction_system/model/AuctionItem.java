@@ -20,29 +20,29 @@ public class AuctionItem {
     private String itemDescription;
 
     @Column(nullable = false, name = "starting_price")
-    private Double startingPrice;
+    private Long startingPrice;
 
     @Column(nullable = false, name = "buy_now_price")
-    private Double buyNowPrice;
+    private Long buyNowPrice;
 
-    // ✅ Mandatory Many-to-One relationship with AuctionType
+    //  Mandatory Many-to-One relationship with AuctionType
     @ManyToOne(optional = false)
     @JoinColumn(name = "auction_type_id", nullable = false) // FK linking to AuctionType
     private AuctionType auctionType;
 
-    // ✅ Mandatory Many-to-One relationship with Category
+    //  Mandatory Many-to-One relationship with Category
     @ManyToOne(optional = false)
     @JoinColumn(name = "category_id", nullable = false) // FK linking to Category
     private Category category;
 
-    // ✅ Mandatory Many-to-One relationship with Users
+    //  Mandatory Many-to-One relationship with Users
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false) // FK linking to Users entity
     private Users user;
 
     public AuctionItem() {}
 
-    public AuctionItem(String itemName, String itemDescription, Double startingPrice, Double buyNowPrice, AuctionType auctionType, Category category, Users user) {
+    public AuctionItem(String itemName, String itemDescription, Long startingPrice, Long buyNowPrice, AuctionType auctionType, Category category, Users user) {
         this.itemName = itemName;
         this.itemDescription = itemDescription;
         this.startingPrice = startingPrice;
