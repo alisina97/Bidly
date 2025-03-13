@@ -13,8 +13,33 @@ const OiledUpDutchOven = () => {
   const [newBid, setNewBid] = useState("");
   const [auctionEnded, setAuctionEnded] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [timeLeft, setTimeLeft] = useState(3600); // Dummy 1 hour in seconds
 
-
+  useEffect(() => {
+    if (auctionEnded || timeLeft <= 0) return;
+  
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          setAuctionEnded(true);
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  
+    return () => clearInterval(timer);
+  }, [auctionEnded, timeLeft]);
+  
+  const formatTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins
+      .toString()
+      .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     fetch("http://localhost:8080/api/users/me", { credentials: "include" })
@@ -124,6 +149,12 @@ const OiledUpDutchOven = () => {
         </p>
         <p>
           <strong>Highest Bidder:</strong> {highestBidder}
+        </p>
+        <p>
+          <strong>Time Left:</strong>{" "}
+          <span className={timeLeft < 300 ? "text-red-500" : ""}>
+          {formatTime(timeLeft)}
+           </span>
         </p>
       </div>
 
