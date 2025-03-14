@@ -58,88 +58,115 @@ const CreateAuctionPage = () => {
 	const handleSubmit = async (event) => {
 		event.preventDefault();
 
-
+		// For when user gets timed out
 		if (!userId) {
 			setError("User session not found. Please log in.");
 			return;
 		}
 		// Validate required fields
-		if (!itemName || !itemDescription || !startingPrice || !auctionEndDate || !category) {
-			setError("Please fill in all fields.");
+		if (!itemName && !itemDescription && !startingPrice && !auctionEndDate && !category) {		
+			setError("Fields cannot be empty");
 			return;
-		}
-
-
-		// Check if auction end date is not in the past or the current date
-		const currentDate = new Date();
-		const endDate = new Date(auctionEndDate);
-
-		// Calculate the duration between current date and auction end date
-		const durationInSeconds = Math.floor((endDate - currentDate) / 1000); // Convert milliseconds to seconds
-		console.log(durationInSeconds);
-
-		// Ensure the duration is at least 12 hours
-		if (durationInSeconds < 3600 * 12) { // 3600 seconds in an hour * 12 hours
-			setError("Auction duration must be at least 12 hours.");
+		}else if (!itemName) {		
+			setError("Item name cannot be blank.");
 			return;
-		}
-
-		// Prevent auctions beyond 28 days
-		if (durationInSeconds > 3600 * 24 * 28) { // 3600 = seconds in an hour * 24 hours in a day * 28 days
-			setError("Auction duration must be shorter than 28 days.");
+		}else if (!itemDescription) {		
+			setError("Item Description cannot be blank");
 			return;
-		}
-
-		// If auction type is Dutch, ensure Buy Now Price is greater than Starting Price
-		if (auctionType === "dutch" && parseFloat(buyNowPrice) <= parseFloat(startingPrice)) {
-			setError("Buy Now Price must be greater than the Starting Price.");
+		}else if (!startingPrice) {		
+			setError("Starting price cannot be blank");
 			return;
-		}
+		}else if (!auctionEndDate) {		
+			setError("Auction Date is required");
+			return;
+		}else if (!category) {		
+			setError("Category is Required");
+			return;
+		} else if (startingPrice < 0){
+			setError("Starting Price cannot be less than 0");
+			return;
+		} else {
 
-		setIsSubmitting(true); // Disable button during submission
+			// Check if auction end date is not in the past or the current date
+			const currentDate = new Date();
+			const endDate = new Date(auctionEndDate);
 
-		// Prepare auction data to be sent to backend
-		const auctionData = new FormData();
-		auctionData.append("itemName", itemName);
-		auctionData.append("itemDescription", itemDescription);
-		auctionData.append("startingPrice", parseFloat(startingPrice));
-		auctionData.append("buyNowPrice", auctionType === "dutch" ? parseFloat(buyNowPrice) : 0); // Only include buyNowPrice for Dutch auctions
-		auctionData.append("auctionTypeId", auctionTypeMap[auctionType]);
-		auctionData.append("categoryId", category);
-		auctionData.append("auctionEndDate", auctionEndDate);
-		auctionData.append("userId", userId); // ✅ FIX: Ensure user ID is included
-		try {
-			// Send auction data to the backend
+			// Calculate the duration between current date and auction end date
+			const durationInSeconds = Math.floor((endDate - currentDate) / 1000); // Convert milliseconds to seconds
+			console.log(durationInSeconds);
 
-			const response = await axios.post("http://localhost:8080/api/auction-items/add", auctionData, {
-				headers: {
-					"Content-Type": "multipart/form-data", // Important for file uploads
-				},
-			});
-
-			console.log(response);
-
-			// Handle success response
-			if (response.status === 200) {
-				const auctionItemId = response.data.auctionItemId; // Assuming the backend returns the auction item ID
-				setSuccessMessage("Auction created successfully!");
-
-				// Create auction status for the created auction item
-				await axios.post("http://localhost:8080/api/auction-status/create", null, {
-					params: {
-						auctionItemId: auctionItemId,
-						startingPrice: parseFloat(startingPrice),
-						durationSeconds: durationInSeconds, // Pass the correct duration in seconds
-					},
-				});
-
-				setTimeout(() => navigate(`/myAuctions/${userId}`), 2000);
-				setError(""); // Clear any previous error messages
+			// Ensure the duration is at least 12 hours
+			if (durationInSeconds < 3600 * 12) { // 3600 seconds in an hour * 12 hours
+				setError("Auction duration cannot be less than 12 hours.");
+				return;
 			}
-		} catch (err) {
-			setError("Auction Failed. Please verify and try again");
-			setSuccessMessage(""); // Clear any previous success messages
-			setIsSubmitting(false); // Re-enable button on error
+			// Prevent auctions beyond 28 days
+			else if (durationInSeconds > 3600 * 24 * 28) { // 3600 = seconds in an hour * 24 hours in a day * 28 days
+				setError("Auction duration cannot be longer than 28 days.");
+				return;
+			}
+			// If auction type is Dutch, ensure Buy Now Price is greater than Starting Price
+			else if (auctionType === "dutch" && parseFloat(buyNowPrice) <= parseFloat(startingPrice)) {
+				setError("You cannot make the Price less than the starting price");
+				return;
+			}
+			else{
+			setIsSubmitting(true); // Disable button during submission
+
+				// Prepare auction data to be sent to backend
+				const auctionData = new FormData();
+				auctionData.append("itemName", itemName);
+				auctionData.append("itemDescription", itemDescription);
+				auctionData.append("startingPrice", parseFloat(startingPrice));
+				auctionData.append("buyNowPrice", auctionType === "dutch" ? parseFloat(buyNowPrice) : 0); // Only include buyNowPrice for Dutch auctions
+				auctionData.append("auctionTypeId", auctionTypeMap[auctionType]);
+				auctionData.append("categoryId", category);
+				auctionData.append("auctionEndDate", auctionEndDate);
+				auctionData.append("userId", userId); // ✅ FIX: Ensure user ID is included
+				try {
+					// Send auction data to the backend
+
+					const response = await axios.post("http://localhost:8080/api/auction-items/add", auctionData, {
+						headers: {
+							"Content-Type": "multipart/form-data", // Important for file uploads
+						},
+					});
+
+					console.log(response);
+
+					// Handle success response
+					if (response.status === 200) {
+						const auctionItemId = response.data.auctionItemId; // Assuming the backend returns the auction item ID
+						setSuccessMessage("Auction created successfully!");
+
+						// Create auction status for the created auction item
+						await axios.post("http://localhost:8080/api/auction-status/create", null, {
+							params: {
+								auctionItemId: auctionItemId,
+								startingPrice: parseFloat(startingPrice),
+								durationSeconds: durationInSeconds, // Pass the correct duration in seconds
+							},
+						});
+
+						setTimeout(() => navigate(`/myAuctions/${userId}`), 2000);
+						setError(""); // Clear any previous error messages
+					} 
+				} catch (err) {
+					const { status, data } = error.response;
+				switch (status) {
+				case 400:
+					setError("Auction Creation failed. Bad request"); // password or username mismatch
+					break;
+				case 429:
+					setError("Too Many Requests, Try again Later"); // database overflow from login attempts
+					break;
+				default:
+					setError(data.message || "An unknown error occurred during creating an auction"); // generic error
+				}
+					setSuccessMessage(""); // Clear any previous success messages
+					setIsSubmitting(false); // Re-enable button on error
+				}
+			}
 		}
 	};
 
