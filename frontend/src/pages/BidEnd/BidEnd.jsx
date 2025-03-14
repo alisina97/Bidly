@@ -5,7 +5,7 @@ import Navbar from '../../components/Navbar/Navbar'
 
 const BidEnd = () => {
     const navigate = useNavigate();
-    
+
     const [loggedInUserId, setLoggedInUserId] = useState(null); // Store user ID from session
     const [winner, setWinner] = useState(null);
     const [userDetails, setUserDetails] = useState(null);
@@ -45,9 +45,10 @@ const BidEnd = () => {
             .catch(() => setErrorMessage("Failed to load auction details."));
     }, [loggedInUserId]); // ✅ Depend on loggedInUserId
 
+    // handles the payment redirect by calculating the total sum of the item's cost + shippping
     const handlePaymentRedirect = () => {
         const totalAmount = winner.winningPrice + 10 + (expeditedShipping ? 20 : 0);
-
+        //
         navigate("/payment", {
             state: {
                 auctionItemId: winner.auctionItem.auctionItemId,
@@ -63,7 +64,7 @@ const BidEnd = () => {
     // catches error messages to return a visual error message 
     if (errorMessage) return <p className="error-message">{errorMessage}</p>;
     
-    // 
+    // sorts the non winners out until it detects the correct user
     if (!winner || !userDetails || !auctionItem || !loggedInUserId) return <p>Loading...</p>;
 
     // ✅ Check if logged-in user is the winner

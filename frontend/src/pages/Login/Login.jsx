@@ -21,11 +21,17 @@ function Login() {
       .catch(() => {}); // Ignore errors if user isn't logged in
   }, []);
 
+
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    if (!username || !password) {
-      setError("Invalid username or password. Please try again.");
+    //Handles missing username field
+    if (!username) {
+      setError("An Username is required.");
+      return;
+    }
+    //Handles missing password field
+    if (!password) {
+      setError("Please enter your password");
       return;
     }
 
@@ -36,16 +42,43 @@ function Login() {
         username,
         password
       }, { withCredentials: true });  // ✅ Store session cookies
-
+      // tracks errors and success
       if (response.status === 200) {
         await axiosInstance.get("/api/users/me", { withCredentials: true });
-
         navigate('/home');  // ✅ Redirect on success
-      } else {
+      } else if  (response.status === 404){
+        setError("User not found."); // when you attempt to login with an unknown account
+      } else if (response.status === 400){
+        setError("400 - Bad Request"); // generic error for unresolved requests
+      } else if  (response.status === 403){
+        setError("403 - Forbidden."); // generic addition (probably won't happen)
+      } else if (response.status === 500){
+        setError("500 - Internal Server Error"); // when nothing is found.
+      } else if (response.status === 501){
+        setError("501 - Not Implemented"); // for undeveloped areas that need to be fixed.
+      }
+      else {
         setError("Unexpected response from the server.");
       }
     } catch (error) {
-      setError(error.response?.data || "Invalid username or password. Please try again.");
+      // Handle network errors and server responses with error status
+      if (error.response) {
+        const { status, data } = error.response;
+        switch (status) {
+          case 401:
+            setError("Incorrect username or password. Please try again."); // password or username mismatch
+            break;
+          case 429:
+            setError("Too many login attempts. Please wait and try again."); // database overflow from login attempts
+            break;
+          default:
+            setError(data.message || "An error occurred during login."); // generic error
+        }
+      } else if (error.request) {
+        setError("No response from server. Check your network connection."); // response not found
+      } else {
+        setError("Error with request."); // unexpected error
+      }
     }
   };
 
@@ -63,8 +96,8 @@ function Login() {
             <button type='submit' className='btn-primary'>Login</button>
 
             <p className='text-sm text-center mt-4'>
-              Not a Bidlier? {" "}
-              <Link to={"/SignUp"} className='font-medium text-primary underline'>Sign Up Now!</Link>
+              Not an existing Bidlier? {" "}
+              <Link to={"/SignUp"} className='font-medium text-primary underline'>Sign Up Here!</Link>
             </p>
           </form>
         </div>
