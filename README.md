@@ -22,6 +22,7 @@ Before you begin, ensure you have the following installed:
 2. Set up your **PostgreSQL username and password at /backend/src/main/resources/application.properties**:
    - The default username is **`postgres`**.
    - Ensure you have a database created by the name of **AuctionDB** for the project.
+3. The application will automatically execute the data.sql file located at **/backend/src/main/resources/data.sql** to populate initial database entries when the backend starts.
 
 ---
 

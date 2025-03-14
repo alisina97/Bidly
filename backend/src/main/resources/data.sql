@@ -51,7 +51,3 @@ INSERT INTO bids (auction_item_id, user_id, bid_amount, bid_time) VALUES
                                                                       (2, 1, 275, '2025-03-02 14:45:00'),
                                                                       (3, 2, 12500, '2025-03-03 09:00:00'),
                                                                       (3, 3, 13000, '2025-03-03 11:00:00');
-                                                                      
--- Insert Winner                                                               
-INSERT INTO public.winners(auction_item_id, user_id, winner_id, winning_price)VALUES 
-																				 (1, 1, 1, 200.00);

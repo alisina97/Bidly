@@ -15,18 +15,17 @@ public class Bids {
     private Long bidId;
 		    
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false) // ✅ FK linking to User, removed `unique = true`
-    private Users user; // ✅ Ensure that the entity is `User`, not `Users`
-
+    @JoinColumn(name = "user_id", nullable = false) 
+    private Users user; 
     @ManyToOne
-    @JoinColumn(name = "auction_item_id", nullable = false) // ✅ FK linking to AuctionItem
+    @JoinColumn(name = "auction_item_id", nullable = false) 
     private AuctionItem auctionItem;
 	    
-    @Column(name = "bid_amount", nullable = false) // ✅ Corrected typo
+    @Column(name = "bid_amount", nullable = false) 
     private Long bidAmount;
 
-    @Column(name = "bid_time", nullable = false) // ✅ Correct placement of `name`
-    private LocalDateTime bidTime; // Represents bid placement time
+    @Column(name = "bid_time", nullable = false) 
+    private LocalDateTime bidTime; 
     
     // Default constructor
     public Bids() {}

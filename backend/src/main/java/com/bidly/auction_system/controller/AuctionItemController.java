@@ -19,8 +19,8 @@ public class AuctionItemController {
     @PostMapping("/add")
     public AuctionItem addAuctionItem(@RequestParam String itemName,
                                       @RequestParam String itemDescription,
-                                      @RequestParam Double startingPrice,
-                                      @RequestParam Double buyNowPrice,
+                                      @RequestParam Long startingPrice,
+                                      @RequestParam Long buyNowPrice,
                                       @RequestParam Long auctionTypeId,
                                       @RequestParam Long categoryId,
                                       @RequestParam Long userId) {  // Added userId
@@ -73,4 +73,18 @@ public class AuctionItemController {
         AuctionItem updatedItem = auctionItemService.updateAuctionItem(auctionItemId, updatedAuctionItem);
         return updatedItem;  // Return updated auction item
     }
+
+    @GetMapping("/{auctionItemId}/buy-now-price")
+    public ResponseEntity<?> getBuyNowPrice(@PathVariable Long auctionItemId) {
+        try {
+            Long buyNowPrice = auctionItemService.getBuyNowPrice(auctionItemId);
+            return ResponseEntity.ok(buyNowPrice);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+
+
+
 }

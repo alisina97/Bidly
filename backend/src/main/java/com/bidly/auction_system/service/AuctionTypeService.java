@@ -14,7 +14,7 @@ public class AuctionTypeService {
     @Autowired
     private AuctionTypeRepository auctionTypeRepository;
 
-    // ✅ Add a new auction type
+    // Add a new auction type
     public AuctionType addAuctionType(String auctionTypeName) {
         Optional<AuctionType> existingAuctionType = auctionTypeRepository.findByAuctionTypeName(auctionTypeName);
         if (existingAuctionType.isPresent()) {
@@ -24,12 +24,12 @@ public class AuctionTypeService {
         return auctionTypeRepository.save(auctionType);
     }
 
-    // ✅ Get all auction types
+    // Get all auction types
     public List<AuctionType> getAllAuctionTypes() {
         return auctionTypeRepository.findAll();
     }
 
-    // ✅ Get an auction type by ID
+    // Get an auction type by ID
     public AuctionType getAuctionTypeById(Long auctionTypeId) {
         return auctionTypeRepository.findById(auctionTypeId)
                 .orElseThrow(() -> new RuntimeException("Auction Type not found!"));

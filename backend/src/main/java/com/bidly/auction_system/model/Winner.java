@@ -26,9 +26,9 @@ public class Winner {
     private Users user;
 
     @Column(nullable = false, name = "winning_price")
-    private Long winningPrice; // ✅ Changed from Double to Long
+    private Long winningPrice; // 
 
-    // ✅ Manually define constructor (Lombok might not always work properly)
+    // Manually define constructor 
     public Winner(AuctionItem auctionItem, Users user, Long winningPrice) {
         this.auctionItem = auctionItem;
         this.user = user;
