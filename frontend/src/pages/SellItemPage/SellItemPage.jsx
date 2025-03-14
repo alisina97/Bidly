@@ -84,7 +84,7 @@ const CreateAuctionPage = () => {
 			return;
 		}
 
-		// Ensure the duration is less than 28 days
+		// Prevent auctions beyond 28 days
 		if (durationInSeconds > 3600 * 24 * 28) { // 3600 = seconds in an hour * 24 hours in a day * 28 days
 			setError("Auction duration must be shorter than 28 days.");
 			return;
@@ -137,7 +137,7 @@ const CreateAuctionPage = () => {
 				setError(""); // Clear any previous error messages
 			}
 		} catch (err) {
-			setError("Failed to create auction. Please try again.");
+			setError("Auction Failed. Please verify and try again");
 			setSuccessMessage(""); // Clear any previous success messages
 			setIsSubmitting(false); // Re-enable button on error
 		}
