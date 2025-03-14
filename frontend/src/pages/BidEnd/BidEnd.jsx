@@ -60,19 +60,23 @@ const BidEnd = () => {
         });
     };
 
+    // catches error messages to return a visual error message 
     if (errorMessage) return <p className="error-message">{errorMessage}</p>;
+    
+    // 
     if (!winner || !userDetails || !auctionItem || !loggedInUserId) return <p>Loading...</p>;
 
     // ✅ Check if logged-in user is the winner
     const isUserWinner = loggedInUserId === winner.user.userId;
 
     return (
-        
+            // tracks the winner of the of the auction after getting the winner of the auction for the payment page
         <div className="bid-end-container">
          <Navbar />  
             
             <h1>Auction Ended</h1>
             <p>Winner: {userDetails.firstName} {userDetails.lastName} (Username: {winner.user.username})</p>
+            
 
             {isUserWinner ? (
                 <p className="winner-message">You are the winner! Proceed to payment.</p>
