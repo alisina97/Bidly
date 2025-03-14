@@ -27,10 +27,11 @@ It is required to follow these steps to properly be able to run Bidly. Ignoring 
 **WARNING:** Not starting the database will prevent you from being able to login or register a new account, making you unable to use Bidly.
 
 ### Backend Setup (Spring Boot)
+** You will need to run a new Shell/CMD/WSL/Command-Line Window to execute these functions**
 
 **1. Navigate to the `backend` folder:**
    ```sh
-   cd backend
+   cd <path-to-your-bidly-installation>/Bidly/backend
    ```
 **2. Build and run the Spring Boot application:**
    ```sh
@@ -41,11 +42,12 @@ It is required to follow these steps to properly be able to run Bidly. Ignoring 
 
 
 ### Frontend Setup (React + Vite)
+** You will need to run a new Shell/CMD/WSL/Command-Line Window to execute these functions**
 
-**1. Open a new terminal and navigate to the frontend folder:**
+**1. Navigate to the frontend folder:**
 
    ```sh
-   cd frontend
+   cd <path-to-your-bidly-installation>/Bidly/frontend
    ```
 
 **2. Install dependencies (first time only):**
