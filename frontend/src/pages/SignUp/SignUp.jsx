@@ -3,6 +3,7 @@ import PasswordInput from "../../components/Input/PasswordInput";
 import axiosInstance from "../../utils/axiosinstance";
 import { Link, useNavigate } from "react-router-dom";
 
+
 function SignUp() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const filter = require('leo-profanity');
 
   const navigate = useNavigate();
 
@@ -50,7 +52,16 @@ function SignUp() {
     } else if (password == !confirmPassword){
       setError("Password mismatch. Remember to insert your password and confirm your password with the same password.");
       return;
-    }
+    } else if (filter.check(username)){
+      setError("You are not allowed to use that Username");
+      return;
+    } else if (filter.check(streetName) || filter.check(finalCountry)){
+      setError("Invalid street and country name");
+      return;
+    } else if (filter.check(firstName) || filter.check(lastName)){
+      setError("Invalid Name. Please enter a valid name");
+      return;
+    } 
 
     try {
       const queryParams = new URLSearchParams({

@@ -38,7 +38,7 @@ function Login() {
     setError("");
 
     try {
-      const response = await axiosInstance.post("/api/users/login", {
+      const response = await axiosInstance.post("/api/users/admin/login", { //new area for login
         username,
         password
       }, { withCredentials: true });  // ✅ Store session cookies
@@ -87,7 +87,8 @@ function Login() {
       <div className='flex items-center justify-center mt-28'>
         <div className='w-96 border rounded bg-white px-7 py-10'>
           <form onSubmit={handleLogin}>
-            <h4 className='text-2xl mb-7'>Login</h4>
+            <h4 className='text-2xl mb-7'>Administrative Login</h4>
+            <p className='text-red-500 text-xs pb-1'>Not for Consumer Use</p>
 
             <input type='text' placeholder='Username' className='input-box' value={username} onChange={(e) => setUsername(e.target.value)} />
             <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} />
