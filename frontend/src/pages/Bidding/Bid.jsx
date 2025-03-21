@@ -24,7 +24,7 @@ function Bid() {
       const res = await fetch('http://localhost:8080/api/users/me', { credentials: 'include' });
       if (!res.ok) throw new Error('User session not found. Please log in.');
       const data = await res.json();
-      setUserId(data.user_id);
+      setUserId(data.userId || data.user_id); // handles both snake and camel cases
     } catch (err) {
       handleError(err, 'Error fetching user session.');
     }
@@ -61,7 +61,7 @@ function Bid() {
     }
 
     try {
-      const formData = new FormData();
+      const formData = new URLSearchParams();
       formData.append('userId', userId);
       formData.append('auctionItemId', auctionId);
 
@@ -70,8 +70,14 @@ function Bid() {
       });
 
       setSuccessMessage('Item purchased successfully!');
-      setTimeout(() => navigate('/'), 2000);
-    } catch (err) {
+      setTimeout(() => {
+        navigate('/bidend', {
+          state: {
+            auctionItemId: auctionId
+          }
+        });
+      }, 1000);
+          } catch (err) {
       handleError(err, 'Failed to complete purchase.');
     }
   };
@@ -105,7 +111,7 @@ function Bid() {
 
       setBidAmount('');
       setSuccessMessage('Bid placed successfully!');
-	  setError('');
+      setError('');
       fetchHighestBid();
     } catch (err) {
       handleError(err, 'Failed to place bid.');
@@ -118,7 +124,7 @@ function Bid() {
       <div className='max-w-screen-md mx-auto px-4 mt-6'>
         {error && <p className='text-red-500'>{error}</p>}
         {successMessage && <p className='text-green-500'>{successMessage}</p>}
-        
+
         {auctionItem ? (
           <>
             <h1 className='text-2xl font-bold'>{auctionItem.itemName}</h1>
@@ -129,8 +135,9 @@ function Bid() {
             </p>
             <p className='mt-2'>Time Remaining: {auctionItem.remainingTime || 'N/A'}</p>
 
-            {auctionItem.auctionType?.auctionTypeName === 'Buy Now' && (
-              <button 
+            {/* ✅ Show Buy Now button if categoryId === 2 */}
+            {auctionItem.auctionType?.auctionTypeId === 2 && (
+              <button
                 className='mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600'
                 onClick={handleBuyNow}
               >

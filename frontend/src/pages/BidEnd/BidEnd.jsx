@@ -1,108 +1,111 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Navbar from '../../components/Navbar/Navbar'
-
+import { useLocation, useNavigate } from "react-router-dom";
+import Navbar from "../../components/Navbar/Navbar";
+import "./BidEnd.css";
 
 const BidEnd = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    const [loggedInUserId, setLoggedInUserId] = useState(null); // Store user ID from session
-    const [winner, setWinner] = useState(null);
-    const [userDetails, setUserDetails] = useState(null);
-    const [auctionItem, setAuctionItem] = useState(null);
-    const [expeditedShipping, setExpeditedShipping] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+  const auctionItemId = location.state?.auctionItemId;
 
-    // ✅ Fetch logged-in user ID from session on component mount
-    useEffect(() => {
-        fetch("http://localhost:8080/api/users/me", { credentials: "include" }) // Ensure session-based auth
-            .then(res => {
-                if (!res.ok) throw new Error("Failed to fetch user session.");
-                return res.json();
-            })
-            .then(data => {
-                setLoggedInUserId(data.userId); // ✅ Set logged-in user ID
-            })
-            .catch(() => setErrorMessage("User session not found. Please log in."));
-    }, []);
+  const [loggedInUserId, setLoggedInUserId] = useState(null);
+  const [winner, setWinner] = useState(null);
+  const [userDetails, setUserDetails] = useState(null);
+  const [auctionItem, setAuctionItem] = useState(null);
+  const [expeditedShipping, setExpeditedShipping] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-    useEffect(() => {
-        if (!loggedInUserId) return; // Wait until we have user ID
+  useEffect(() => {
+    if (!auctionItemId) {
+      setErrorMessage("Auction ID missing.");
+      return;
+    }
 
-        fetch("http://localhost:8080/api/winners/1")
-            .then(res => res.json())
-            .then(data => {
-                setWinner(data);
-                return Promise.all([
-                    fetch(`http://localhost:8080/api/user-details/details/${data.user.userId}`).then(res => res.json()),
-                    fetch(`http://localhost:8080/api/auction-items/${data.auctionItem.auctionItemId}`).then(res => res.json())
-                ]);
-            })
-            .then(([userDetails, auctionItem]) => {
-                setUserDetails(userDetails);
-                setAuctionItem(auctionItem);
-            })
-            .catch(() => setErrorMessage("Failed to load auction details."));
-    }, [loggedInUserId]); // ✅ Depend on loggedInUserId
+    // Get logged in user
+    fetch("http://localhost:8080/api/users/me", { credentials: "include" })
+      .then(res => res.json())
+      .then(data => setLoggedInUserId(data.userId || data.user_id))
+      .catch(() => setErrorMessage("User session not found."));
 
-    // handles the payment redirect by calculating the total sum of the item's cost + shippping
-    const handlePaymentRedirect = () => {
-        const totalAmount = winner.winningPrice + 10 + (expeditedShipping ? 20 : 0);
-        //
-        navigate("/payment", {
-            state: {
-                auctionItemId: winner.auctionItem.auctionItemId,
-                winner,
-                auctionItem,
-                userDetails,
-                expeditedShipping,
-                totalAmount
-            }
-        });
-    };
+    // Get winner
+    fetch(`http://localhost:8080/api/winners/${auctionItemId}`)
+      .then(res => res.json())
+      .then(winnerData => {
+        setWinner(winnerData);
+        return Promise.all([
+          fetch(`http://localhost:8080/api/user-details/details/${winnerData.user.userId}`).then(res => res.json()),
+          fetch(`http://localhost:8080/api/auction-items/${auctionItemId}`).then(res => res.json())
+        ]);
+      })
+      .then(([fetchedUserDetails, fetchedAuctionItem]) => {
+        setUserDetails(fetchedUserDetails);
+        setAuctionItem(fetchedAuctionItem);
+      })
+      .catch(() => setErrorMessage("Failed to load auction or winner details."));
+  }, [auctionItemId]);
 
-    // catches error messages to return a visual error message 
-    if (errorMessage) return <p className="error-message">{errorMessage}</p>;
-    
-    // sorts the non winners out until it detects the correct user
-    if (!winner || !userDetails || !auctionItem || !loggedInUserId) return <p>Loading...</p>;
+  const handlePaymentRedirect = () => {
+    const totalAmount = winner.winningPrice + 10 + (expeditedShipping ? 20 : 0);
 
-    // ✅ Check if logged-in user is the winner
-    const isUserWinner = loggedInUserId === winner.user.userId;
+    navigate("/payment", {
+      state: {
+        auctionItemId: winner.auctionItem.auctionItemId,
+        winner,
+        auctionItem,
+        userDetails,
+        expeditedShipping,
+        totalAmount
+      }
+    });
+  };
 
-    return (
-            // tracks the winner of the of the auction after getting the winner of the auction for the payment page
-        <div className="bid-end-container">
-         <Navbar />  
-            
-            <h1>Auction Ended</h1>
-            <p>Winner: {userDetails.firstName} {userDetails.lastName} (Username: {winner.user.username})</p>
-            
+  if (errorMessage) return <p className="error-message">{errorMessage}</p>;
+  if (!winner || !userDetails || !auctionItem || !loggedInUserId) return <p className="loading-text">Loading...</p>;
 
-            {isUserWinner ? (
-                <p className="winner-message">You are the winner! Proceed to payment.</p>
-            ) : (
-                <p className="error-message"> You did not win this auction.</p>
-            )}
+  const isUserWinner = loggedInUserId === winner.user.userId;
 
-            <div className="payment-section">
-                <h2>Order Summary</h2>
-                <p><strong>Item Name:</strong> {auctionItem.itemName}</p>
-                <p><strong>Description:</strong> {auctionItem.itemDescription}</p>
-                <p><strong>Final Price:</strong> ${winner.winningPrice}</p>
-                <p>Standard Shipping: $10</p>
+  return (
+    <div className="bid-end-container">
+      <Navbar />
 
-                <label>
-                    <input type="checkbox" checked={expeditedShipping} onChange={() => setExpeditedShipping(!expeditedShipping)} />
-                    Add Expedited Shipping (+$20)
-                </label>
+      <div className="card">
+        <h1 className="title">Auction Ended</h1>
+        <p className="winner-info">
+          Winner: <strong>{userDetails.firstName} {userDetails.lastName}</strong> (Username: <em>{winner.user.username}</em>)
+        </p>
 
-                <h3>Total: ${winner.winningPrice + 10 + (expeditedShipping ? 20 : 0)}</h3>
+        {isUserWinner ? (
+          <p className="winner-message">🎉 You are the winner! Proceed to payment.</p>
+        ) : (
+          <p className="error-message">You did not win this auction.</p>
+        )}
 
-                <button onClick={handlePaymentRedirect} disabled={!isUserWinner}>Pay Now</button>
-            </div>
+        <div className="payment-section">
+          <h2>Order Summary</h2>
+          <p><strong>Item Name:</strong> {auctionItem.itemName}</p>
+          <p><strong>Description:</strong> {auctionItem.itemDescription}</p>
+          <p><strong>Final Price:</strong> ${winner.winningPrice}</p>
+          <p>Standard Shipping: $10</p>
+
+          <label className="shipping-option">
+            <input
+              type="checkbox"
+              checked={expeditedShipping}
+              onChange={() => setExpeditedShipping(!expeditedShipping)}
+            />
+            Add Expedited Shipping (+$20)
+          </label>
+
+          <h3>Total: ${winner.winningPrice + 10 + (expeditedShipping ? 20 : 0)}</h3>
+
+          <button className="pay-button" onClick={handlePaymentRedirect} disabled={!isUserWinner}>
+            Pay Now
+          </button>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default BidEnd;

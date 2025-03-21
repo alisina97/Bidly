@@ -1,111 +1,104 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Navbar from '../../components/Navbar/Navbar'
-
+import Navbar from '../../components/Navbar/Navbar';
 
 const PaymentPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
     const { auctionItemId, winner, auctionItem, userDetails, expeditedShipping, totalAmount } = location.state || {};
-    
+
     const [loggedInUserId, setLoggedInUserId] = useState(null);
     const [paymentDetails, setPaymentDetails] = useState(null);
     const [error, setError] = useState("");
 
-    // Card details state
     const [cardNumber, setCardNumber] = useState("");
     const [cardName, setCardName] = useState("");
     const [expiryDate, setExpiryDate] = useState("");
     const [securityCode, setSecurityCode] = useState("");
 
-    // ✅ Fetch `user_id` from session when the component mounts
+    // ✅ Fetch user session
     useEffect(() => {
-        axios.get("http://localhost:8080/api/users/me", { withCredentials: true }) 
+        axios.get("http://localhost:8080/api/users/me", { withCredentials: true })
             .then(res => {
-                setLoggedInUserId(res.data.userId);
+                console.log("User Session Response:", res.data);
+                setLoggedInUserId(res.data.user_id); // ✅ using user_id based on your backend
             })
-            .catch(() => {
-                setError("User session not found. Please log in.");
-            });
+            .catch(() => setError("User session not found. Please log in."));
     }, []);
 
-    // ✅ Fetch payment details once `loggedInUserId` is retrieved
+    // ✅ Fetch payment details after userId is set
     useEffect(() => {
+        console.log("loggedInUserId:", loggedInUserId);
+        console.log("auctionItemId:", auctionItemId);
+
         if (!loggedInUserId || !auctionItemId) return;
 
         axios.get("http://localhost:8080/api/payment/user-details", {
-            params: { userId: loggedInUserId, auctionItemId }
+            params: { userId: loggedInUserId, auctionItemId },
+            withCredentials: true
         })
-        .then(response => {
-            setPaymentDetails(response.data);
-            setError("");
-        })
-        .catch(() => {
-            setError("Failed to fetch payment details. Please check the API.");
-            setPaymentDetails(null);
-        });
-    }, [loggedInUserId, auctionItemId]);
+            .then(res => {
+                console.log("Payment Details Response:", res.data);
+                setPaymentDetails(res.data);
+                setError("");
+            })
+            .catch(err => {
+                console.error("Payment Details Error:", err);
+                setError("Failed to fetch payment details. Please check the API.");
+                setPaymentDetails(null);
+            });
+    }, [loggedInUserId]);
 
-    // ✅ Handle payment submission
     const handlePayment = () => {
         const arrivalDate = new Date();
         arrivalDate.setDate(arrivalDate.getDate() + 3);
         const formattedArrivalDate = arrivalDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
         const receiptData = {
-            firstName: paymentDetails?.firstName,
-            lastName: paymentDetails?.lastName,
-            streetNumber: paymentDetails?.streetNumber,
-            streetName: paymentDetails?.streetName,
-            city: paymentDetails?.city,
-            province: paymentDetails?.province,
-            country: paymentDetails?.country,
+            firstName: paymentDetails?.firstName || "N/A",
+            lastName: paymentDetails?.lastName || "N/A",
+            streetNumber: paymentDetails?.streetNumber || "N/A",
+            streetName: paymentDetails?.streetName || "N/A",
+            city: paymentDetails?.city || "N/A",
+            province: paymentDetails?.province || "N/A",
+            country: paymentDetails?.country || "N/A",
             postalCode: paymentDetails?.postalCode || "N/A",
             totalAmountPaid: totalAmount,
             arrivalDate: formattedArrivalDate,
             itemId: auctionItemId,
-            itemName: auctionItem?.name || "Auction Item",
+            itemName: auctionItem?.itemName || "Auction Item",
         };
 
-        navigate("/receipt", { state: receiptData }); // Navigate with data
+        navigate("/receipt", { state: receiptData });
     };
-
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
-    if (!loggedInUserId || !paymentDetails) return <p>Loading payment details...</p>;
 
     return (
         <div style={{ textAlign: "center", padding: "20px", maxWidth: "900px", margin: "auto" }}>
-            <Navbar></Navbar>
+            <Navbar />
             <h2>Payment Details</h2>
+            {error && <p style={{ color: "red" }}>{error}</p>}
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
-                
-                {/* Left Column: Payment Details */}
+                {/* Left Column */}
                 <div style={{ flex: 1, border: "1px solid #ccc", padding: "15px", borderRadius: "8px", backgroundColor: "#f9f9f9", textAlign: "left" }}>
-                    {paymentDetails ? (
-                        <>
-                            <h3>User Information</h3>
-                            <p><strong>First Name:</strong> {paymentDetails.firstName}</p>
-                            <p><strong>Last Name:</strong> {paymentDetails.lastName}</p>
+                    <h3>User Information</h3>
+                    <p><strong>First Name:</strong> {paymentDetails?.firstName || "Loading..."}</p>
+                    <p><strong>Last Name:</strong> {paymentDetails?.lastName || "Loading..."}</p>
 
-                            <h3>Shipping Address</h3>
-                            <p><strong>Street Number:</strong> {paymentDetails.streetNumber}</p>
-                            <p><strong>Street Name:</strong> {paymentDetails.streetName}</p>
-                            <p><strong>City:</strong> {paymentDetails.city}</p>
-                            <p><strong>Province:</strong> {paymentDetails.province}</p>
-                            <p><strong>Country:</strong> {paymentDetails.country}</p>
+                    <h3>Shipping Address</h3>
+                    <p><strong>Street Number:</strong> {paymentDetails?.streetNumber || "Loading..."}</p>
+                    <p><strong>Street Name:</strong> {paymentDetails?.streetName || "Loading..."}</p>
+                    <p><strong>City:</strong> {paymentDetails?.city || "Loading..."}</p>
+                    <p><strong>Province:</strong> {paymentDetails?.province || "Loading..."}</p>
+                    <p><strong>Country:</strong> {paymentDetails?.country || "Loading..."}</p>
 
-                            <h3>Item Details</h3>
-                            <p><strong>Total Price:</strong> ${totalAmount}</p>
-                        </>
-                    ) : (
-                        <p>Loading payment details...</p>
-                    )}
+                    <h3>Item Details</h3>
+                    <p><strong>Total Price:</strong> ${totalAmount}</p>
                 </div>
 
-                {/* Right Column: Card Details Form */}
+                {/* Right Column */}
                 <div style={{ flex: 1, padding: "15px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#fff", textAlign: "left" }}>
                     <h3>Card Details</h3>
                     <input type="text" placeholder="Card Number" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} style={{ width: "100%", padding: "8px", marginBottom: "10px" }} />

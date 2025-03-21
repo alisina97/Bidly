@@ -98,16 +98,24 @@ function Home() {
                   )}
                   <p>Highest Bid: ${item.highestBid || "N/A"}</p>
                   {item.status === "SOLD" ? (
-                    <p className="text-red-500 font-bold">SOLD</p>
+                    <div>
+                      <p className="text-red-500 font-bold">SOLD</p>
+                      <button 
+                        className="mt-2 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+                        onClick={() => navigate('/bidend', { state: { auctionItemId: item.auctionItemId } })}
+                      >
+                        View Details
+                      </button>
+                    </div>
                   ) : (
                     <button 
-                      className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50" 
+                      className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                       onClick={() => handleBid(item.auctionItemId)}
-                      disabled={item.status === "SOLD"}
                     >
                       Bid
                     </button>
                   )}
+
                 </div>
               ))}
             </div>
