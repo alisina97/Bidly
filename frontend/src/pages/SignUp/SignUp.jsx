@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import PasswordInput from "../../components/Input/PasswordInput";
 import axiosInstance from "../../utils/axiosinstance";
 import { Link, useNavigate } from "react-router-dom";
+import filter from 'leo-profanity';
 
 
 function SignUp() {
@@ -11,7 +12,6 @@ function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const filter = require('leo-profanity');
 
   const navigate = useNavigate();
 
@@ -56,7 +56,7 @@ function SignUp() {
       setError("You are not allowed to use that Username");
       return;
     } else if (filter.check(streetName) || filter.check(finalCountry)){
-      setError("Invalid street and country name");
+      setError("Invalid street or country name");
       return;
     } else if (filter.check(firstName) || filter.check(lastName)){
       setError("Invalid Name. Please enter a valid name");
