@@ -11,12 +11,39 @@ function Bid() {
   const [userId, setUserId] = useState(null);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserSession();
     fetchAuctionItem();
     fetchHighestBid();
+  }, []);
+
+  useEffect(() => {
+    // generic time until I got some actual info
+    let totalSeconds = (2 * 24 * 60 * 60) + (12 * 60 * 60) + (30 * 60) + 45;
+
+    const updateTimer = () => {
+      if (totalSeconds <= 0) {
+        setTimeRemaining('Auction Ended');
+        clearInterval(timerInterval);
+        return;
+      }
+
+      const days = Math.floor(totalSeconds / (24 * 60 * 60));
+      const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+      const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+      const seconds = totalSeconds % 60;
+
+      setTimeRemaining(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      totalSeconds--;
+    };
+
+    updateTimer(); // Initial call
+    const timerInterval = setInterval(updateTimer, 1000); // Update every second
+
+    return () => clearInterval(timerInterval);
   }, []);
 
   const fetchUserSession = async () => {
@@ -133,7 +160,7 @@ function Bid() {
             <p className='mt-2 font-semibold'>
               Highest Bid: {highestBid ? `$${highestBid.bidAmount}` : 'Be the first to bid.'}
             </p>
-            <p className='mt-2'>Time Remaining: {auctionItem.remainingTime || 'N/A'}</p>
+            <p className='mt-2 font-semibold'>Time Remaining: {timeRemaining}</p>
 
             {/* ✅ Show Buy Now button if categoryId === 2 */}
             {auctionItem.auctionType?.auctionTypeId === 2 && (
