@@ -115,6 +115,11 @@ function Bid() {
       return;
     }
 
+    if (auctionItem && userId === auctionItem.userId) {
+      setError('You cannot bid on your own auction.');
+      return;
+    }
+
     if (!bidAmount || isNaN(bidAmount) || bidAmount <= 0) {
       setError('Please enter a valid bid amount.');
       return;
@@ -144,6 +149,8 @@ function Bid() {
       handleError(err, 'Failed to place bid.');
     }
   };
+
+  const isOwnAuction = auctionItem && userId === auctionItem.userId;
 
   return (
     <>
@@ -181,12 +188,19 @@ function Bid() {
                 placeholder='Enter your bid'
                 className='border p-2 rounded w-full mt-2'
               />
-              <button
-                className='mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
+             <button
+                className={`mt-2 px-4 py-2 rounded text-white ${
+                  isOwnAuction 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-blue-500 hover:bg-blue-600'
+                }`}
                 onClick={handlePlaceBid}
-              >
-                Place Bid
+                disabled={isOwnAuction}  >
+                {isOwnAuction ? 'Cannot Bid on Own Item' : 'Place Bid'}
               </button>
+              {isOwnAuction && (  // Added
+                <p className='mt-2 text-gray-600'>Cannot Bid on your own product</p>
+              )}
             </div>
           </>
         ) : (
