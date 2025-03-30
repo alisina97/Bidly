@@ -329,7 +329,7 @@ const CreateAuctionPage = () => {
                         type="submit"
                         disabled={isSubmitting}
                         style={{
-                            backgroundColor: isSubmitting ? "#ccc" : "#ff4444",
+                            backgroundColor: isSubmitting ? "#ccc" : "#00C851	",
                             color: "white",
                             padding: "10px",
                             border: "none",
