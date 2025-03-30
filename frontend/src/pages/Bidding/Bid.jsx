@@ -199,7 +199,7 @@ function Bid() {
                 {isOwnAuction ? 'Cannot Bid on Own Item' : 'Place Bid'}
               </button>
               {isOwnAuction && (  // Added
-                <p className='mt-2 text-gray-600'>Cannot Bid on your own product</p>
+                <p className='mt-2 text-gray-600'>Cannot bid on your own product</p>
               )}
             </div>
           </>
