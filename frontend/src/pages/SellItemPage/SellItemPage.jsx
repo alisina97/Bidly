@@ -172,65 +172,179 @@ const CreateAuctionPage = () => {
 
 
 	return (
-		<div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
-			<Navbar />
-			<h2>Create Auction</h2>
+        <>
+            <Navbar />
+            <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
+                <h2 style={{ marginBottom: "20px" }}>Create Auction</h2>
 
-			<form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-				<div>
-					<label htmlFor="itemName"><strong>Item Name</strong></label>
-					<input type="text" id="itemName" value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="Enter item name" required style={{ width: "100%", padding: "8px" }} />
-				</div>
+                {error && <p style={{ color: "#ff4444", marginBottom: "10px" }}>{error}</p>}
+                {successMessage && <p style={{ color: "#00C851", marginBottom: "10px" }}>{successMessage}</p>}
 
-				<div>
-					<label htmlFor="itemDescription"><strong>Item Description</strong></label>
-					<textarea id="itemDescription" value={itemDescription} onChange={(e) => setItemDescription(e.target.value)} placeholder="Describe the item" required style={{ width: "100%", padding: "8px", minHeight: "100px" }} />
-				</div>
+                <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label htmlFor="itemName" style={{ fontWeight: "bold" }}>Item Name</label>
+                        <input
+                            type="text"
+                            id="itemName"
+                            value={itemName}
+                            onChange={(e) => setItemName(e.target.value)}
+                            placeholder="Enter item name"
+                            required
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                border: "1px solid #ddd",
+                                borderRadius: "4px",
+                                fontSize: "14px",
+                            }}
+                        />
+                    </div>
 
-				<div>
-					<label htmlFor="auctionType"><strong>Auction Type</strong></label>
-					<select id="auctionType" value={auctionType} onChange={(e) => setAuctionType(e.target.value)} required style={{ width: "100%", padding: "8px" }}>
-						<option value="forward">Regular Auction</option>
-						<option value="dutch">Dutch Auction (Buy Now)</option>
-					</select>
-				</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label htmlFor="itemDescription" style={{ fontWeight: "bold" }}>Item Description</label>
+                        <textarea
+                            id="itemDescription"
+                            value={itemDescription}
+                            onChange={(e) => setItemDescription(e.target.value)}
+                            placeholder="Describe the item"
+                            required
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                border: "1px solid #ddd",
+                                borderRadius: "4px",
+                                minHeight: "100px",
+                                fontSize: "14px",
+                            }}
+                        />
+                    </div>
 
-				<div>
-					<label htmlFor="startingPrice"><strong>Starting Price</strong></label>
-					<input type="number" id="startingPrice" value={startingPrice} onChange={(e) => setStartingPrice(e.target.value)} placeholder="Enter starting price" required min="0.01" step="0.01" style={{ width: "100%", padding: "8px" }} />
-				</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label htmlFor="auctionType" style={{ fontWeight: "bold" }}>Auction Type</label>
+                        <select
+                            id="auctionType"
+                            value={auctionType}
+                            onChange={(e) => setAuctionType(e.target.value)}
+                            required
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                border: "1px solid #ddd",
+                                borderRadius: "4px",
+                                fontSize: "14px",
+                            }}
+                        >
+                            <option value="forward">Regular Auction</option>
+                            <option value="dutch">Dutch Auction (Buy Now)</option>
+                        </select>
+                    </div>
 
-				{auctionType === "dutch" && (
-					<div>
-						<label htmlFor="buyNowPrice"><strong>Buy Now Price (Dutch Auction)</strong></label>
-						<input type="number" id="buyNowPrice" value={buyNowPrice} onChange={(e) => setBuyNowPrice(e.target.value)} placeholder="Enter Buy Now Price" required min="0.01" step="0.01" style={{ width: "100%", padding: "8px" }} />
-					</div>
-				)}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label htmlFor="startingPrice" style={{ fontWeight: "bold" }}>Starting Price</label>
+                        <input
+                            type="number"
+                            id="startingPrice"
+                            value={startingPrice}
+                            onChange={(e) => setStartingPrice(e.target.value)}
+                            placeholder="Enter starting price"
+                            required
+                            min="0.01"
+                            step="0.01"
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                border: "1px solid #ddd",
+                                borderRadius: "4px",
+                                fontSize: "14px",
+                            }}
+                        />
+                    </div>
 
-				<div>
-					<label htmlFor="auctionEndDate"><strong>Auction End Date</strong></label>
-					<input type="datetime-local" id="auctionEndDate" value={auctionEndDate} onChange={(e) => setAuctionEndDate(e.target.value)} required style={{ width: "100%", padding: "8px" }} />
-				</div>
+                    {auctionType === "dutch" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                            <label htmlFor="buyNowPrice" style={{ fontWeight: "bold" }}>Buy Now Price (Dutch Auction)</label>
+                            <input
+                                type="number"
+                                id="buyNowPrice"
+                                value={buyNowPrice}
+                                onChange={(e) => setBuyNowPrice(e.target.value)}
+                                placeholder="Enter Buy Now Price"
+                                required
+                                min="0.01"
+                                step="0.01"
+                                style={{
+                                    width: "100%",
+                                    padding: "10px",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "4px",
+                                    fontSize: "14px",
+                                }}
+                            />
+                        </div>
+                    )}
 
-				<div>
-					<label htmlFor="category"><strong>Category</strong></label>
-					<select id="category" value={category} onChange={(e) => setCategory(e.target.value)} required style={{ width: "100%", padding: "8px" }}>
-						<option value="">Select a category</option>
-						{categories.map((category) => (
-							<option key={category.categoryId} value={category.categoryId}>{category.categoryName}</option>
-						))}
-					</select>
-				</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label htmlFor="auctionEndDate" style={{ fontWeight: "bold" }}>Auction End Date</label>
+                        <input
+                            type="datetime-local"
+                            id="auctionEndDate"
+                            value={auctionEndDate}
+                            onChange={(e) => setAuctionEndDate(e.target.value)}
+                            required
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                border: "1px solid #ddd",
+                                borderRadius: "4px",
+                                fontSize: "14px",
+                            }}
+                        />
+                    </div>
 
-				<button type="submit" disabled={isSubmitting} style={{ backgroundColor: isSubmitting ? "gray" : "green", cursor: isSubmitting ? "not-allowed" : "pointer", padding: "10px", border: "none", borderRadius: "5px", width: "100%" }}>
-					{isSubmitting ? "Creating..." : "Create Auction"}
-				</button>
-			</form>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label htmlFor="category" style={{ fontWeight: "bold" }}>Category</label>
+                        <select
+                            id="category"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            required
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                border: "1px solid #ddd",
+                                borderRadius: "4px",
+                                fontSize: "14px",
+                            }}
+                        >
+                            <option value="">Select a category</option>
+                            {categories.map((category) => (
+                                <option key={category.categoryId} value={category.categoryId}>
+                                    {category.categoryName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-			{error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
-			{successMessage && <p style={{ color: "green", marginTop: "10px" }}>{successMessage}</p>}
-		</div>
-	);
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        style={{
+                            backgroundColor: isSubmitting ? "#ccc" : "#ff4444",
+                            color: "white",
+                            padding: "10px",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: isSubmitting ? "not-allowed" : "pointer",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                        }}
+                    >
+                        {isSubmitting ? "Creating..." : "Create Auction"}
+                    </button>
+                </form>
+            </div>
+        </>
+    );
 };
 
 export default CreateAuctionPage;
