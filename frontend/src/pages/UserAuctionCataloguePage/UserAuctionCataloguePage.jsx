@@ -39,8 +39,9 @@ const UserAuctionsPage = () => {
   }, [userId]);
 
   return (
+    <>
+    <Navbar />
     <div style={{ textAlign: 'center', padding: '20px' }}>
-      <Navbar></Navbar>
       <h2>Your Auctions</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {auctions.length > 0 ? (
@@ -74,6 +75,7 @@ const UserAuctionsPage = () => {
         Sell an Item
       </button>
     </div>
+    </>
   );
 };
 

@@ -48,8 +48,9 @@ const EditAuctionPage = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <div style={{ textAlign: 'center', padding: '20px' }}>
-      <Navbar></Navbar>
       <h1 style={{fontSize: '28px', marginBottom: '40px' }}><strong>Edit Auction</strong></h1>
 	  
       
@@ -100,6 +101,7 @@ const EditAuctionPage = () => {
         <p>Loading auction details...</p>
       )}
     </div>
+    </>
   );
 };
 

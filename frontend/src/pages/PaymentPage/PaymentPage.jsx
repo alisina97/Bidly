@@ -75,8 +75,9 @@ const PaymentPage = () => {
     };
 
     return (
+        <>
+        <Navbar />
         <div style={{ textAlign: "center", padding: "20px", maxWidth: "900px", margin: "auto" }}>
-            <Navbar />
             <h2>Payment Details</h2>
             {error && <p style={{ color: "red" }}>{error}</p>}
 
@@ -112,6 +113,7 @@ const PaymentPage = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

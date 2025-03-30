@@ -1,10 +1,11 @@
 import React from "react";
 import Navbar from "../../components/Navbar/Navbar";
 
-const UsersOverviewPage = () => {
+const AdminControlPanel = () => {
     return (
+        <>
+        <Navbar />
         <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
-            <Navbar />
             
             {/* Users Table */}
             <div style={{ marginBottom: "40px" }}>
@@ -70,7 +71,8 @@ const UsersOverviewPage = () => {
                 </table>
             </div>
         </div>
+        </>
     );
 };
 
-export default UsersOverviewPage;
+export default AdminControlPanel;

@@ -66,8 +66,9 @@ const BidEnd = () => {
   const isUserWinner = loggedInUserId === winner.user.userId;
 
   return (
+    <>
+    <Navbar />
     <div className="bid-end-container">
-      <Navbar />
 
       <div className="card">
         <h1 className="title">Auction Ended</h1>
@@ -105,6 +106,7 @@ const BidEnd = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
