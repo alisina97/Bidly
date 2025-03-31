@@ -1,18 +1,50 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Navbar.css";  
 
 const Navbar = () => {
     const navigate = useNavigate();
+    //for login state
+    const [userId, setUserId] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        const fetchUserSession = async () => {
+            try {
+                const response = await axios.get("http://localhost:8080/api/users/me", {
+                    withCredentials: true,
+                });
+                setUserId(response.data.user_id);
+                setIsLoggedIn(true);
+            } catch (error) { //for invalid user sessions
+                setUserId(null);
+                setIsLoggedIn(false);
+                console.error("Failed to fetch user session:", error);
+            }
+        };
+        fetchUserSession();
+    }, []);
 
     const handleLogout = async () => {
+        //changes to logout section and turns it to ask for signin
         try {
             await axios.post("http://localhost:8080/api/users/logout", {}, { withCredentials: true });
-            navigate("/login"); // Redirect to login page after logout
-            window.location.reload(); // ✅ Ensure session is cleared and UI updates
+            setUserId(null); 
+            setIsLoggedIn(false);
+            navigate("/login");
+            window.location.reload();
         } catch (error) {
             console.error("Logout failed", error);
+        }
+    };
+
+    //login button action
+    const handleAuthAction = () => {
+        if (isLoggedIn) {
+            handleLogout();
+        } else {
+            navigate("/login");
         }
     };
 
@@ -21,10 +53,26 @@ const Navbar = () => {
             <div className="nav-container">
                 <ul className="nav-links">
                     <li><Link to="/home" className="nav-link">Home</Link></li>
-                    <li><Link to="/sell" className="nav-link">Sell</Link></li>
-                    <li><Link to="/myAuctions/:userId" className="nav-link">My Auctions</Link></li>
+                    <li>
+                        <Link 
+                            to={isLoggedIn ? "/sell" : "/login"}
+                            className="nav-link"
+                        >
+                            Sell
+                        </Link>
+                    </li>
+                    <li>
+                        <Link 
+                            to={isLoggedIn && userId ? `/myAuctions/${userId}` : "/login"}
+                            className="nav-link"
+                        >
+                            My Auctions
+                        </Link>
+                    </li>
                 </ul>
-                <button className="logout-btn" onClick={handleLogout}>Sign Out</button>
+                <button className="logout-btn" onClick={handleAuthAction}>
+                    {isLoggedIn ? "Sign Out" : "Login/Register"}
+                </button>
             </div>
         </nav>
     );
