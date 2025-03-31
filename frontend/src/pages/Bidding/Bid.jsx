@@ -13,6 +13,8 @@ function Bid() {
   const [successMessage, setSuccessMessage] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState('');
   const navigate = useNavigate();
+  const isOwnAuction = auctionItem && userId === auctionItem.userId;
+  
 
   useEffect(() => {
     fetchUserSession();
@@ -150,8 +152,6 @@ function Bid() {
     }
   };
 
-  const isOwnAuction = auctionItem && userId === auctionItem.userId;
-
   return (
     <>
       <Navbar />
@@ -181,25 +181,24 @@ function Bid() {
 
             <div className='mt-6'>
               <h2 className='text-lg font-bold'>Place a Bid</h2>
-              <input
-                type='number'
-                value={bidAmount}
-                onChange={(e) => setBidAmount(e.target.value)}
-                placeholder='Enter your bid'
-                className='border p-2 rounded w-full mt-2'
-              />
-             <button
-                className={`mt-2 px-4 py-2 rounded text-white ${
-                  isOwnAuction 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-blue-500 hover:bg-blue-600'
-                }`}
-                onClick={handlePlaceBid}
-                disabled={isOwnAuction}  >
-                {isOwnAuction ? 'Cannot Bid on Own Item' : 'Place Bid'}
-              </button>
-              {isOwnAuction && (  // Added
-                <p className='mt-2 text-gray-600'>Cannot bid on your own product</p>
+              {isOwnAuction ? (
+                <p className='text-gray-600'>You cannot bid on your own product.</p> // Show message instead of form
+              ) : (
+                <>
+                  <input
+                    type='number'
+                    value={bidAmount}
+                    onChange={(e) => setBidAmount(e.target.value)}
+                    placeholder='Enter your bid'
+                    className='border p-2 rounded w-full mt-2'
+                  />
+                  <button
+                    className='mt-2 px-4 py-2 rounded text-white bg-blue-500 hover:bg-blue-600'
+                    onClick={handlePlaceBid}
+                  >
+                    Place Bid
+                  </button>
+                </>
               )}
             </div>
           </>
