@@ -324,21 +324,19 @@ const CreateAuctionPage = () => {
                             ))}
                         </select>
                     </div>
-
                     <button
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !userId}
                         style={{
-                            backgroundColor: isSubmitting ? "#ccc" : "#00C851	",
+                            backgroundColor: (isSubmitting || !userId) ? "#ccc" : "#00C851",
                             color: "white",
                             padding: "10px",
                             border: "none",
                             borderRadius: "4px",
-                            cursor: isSubmitting ? "not-allowed" : "pointer",
+                            cursor: (isSubmitting || !userId) ? "not-allowed" : "pointer",
                             fontSize: "14px",
                             fontWeight: "bold",
-                        }}
-                    >
+                        }}>
                         {isSubmitting ? "Creating..." : "Create Auction"}
                     </button>
                 </form>
