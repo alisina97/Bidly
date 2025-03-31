@@ -1,218 +1,143 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
+import axiosInstance from '../../utils/axiosinstance';
 
 const AdminControlPanel = () => {
-    const [selectedUserId, setSelectedUserId] = useState(null);
     const [users, setUsers] = useState([]);
-    const [auctions, setAuctions] = useState({});
-    const [error, setError] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
-
-    const tableStyles = {
-        width: "100%",
-        borderCollapse: "collapse",
-        marginTop: "10px"
-    };
-
-    const thStyles = {
-        padding: "10px",
-        border: "1px solid #ddd",
-        backgroundColor: "#f2f2f2"
-    };
-
-    const tdStyles = {
-        padding: "10px",
-        border: "1px solid #ddd"
-    };
+    const [selectedUserId, setSelectedUserId] = useState(null);
+    const [userAuctions, setUserAuctions] = useState([]);
+    const [deleteError, setDeleteError] = useState(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await axios.get("http://localhost:8080/api/users/all", {
-                    withCredentials: true,
-                    timeout: 10000
-                });
-                const usersData = Array.isArray(response.data) ? response.data : [];
-                setUsers(usersData);
-                setSuccessMessage("Users fetched successfully");
+                const res = await axiosInstance.get("/api/users");
+                setUsers(res.data);
             } catch (err) {
-                setError(err.response?.data?.message || err.message || "Failed to fetch users");
+                console.error("Failed to fetch users:", err);
             }
         };
-
         fetchUsers();
     }, []);
 
-    useEffect(() => {
-        if (!users || users.length === 0) return;
-
-        const fetchAuctionsForUsers = async () => {
-            try {
-                const auctionsByUser = {};
-                for (const user of users) {
-                    const response = await axios.get(`http://localhost:8080/api/auction-items/user/${user.user_id}`, {
-                        withCredentials: true,
-                        timeout: 10000
-                    });
-                    auctionsByUser[user.user_id] = Array.isArray(response.data) ? response.data : [];
-                }
-                setAuctions(auctionsByUser);
-                setSuccessMessage("Auctions fetched successfully");
-            } catch (err) {
-                setError(err.response?.data?.message || err.message || "Failed to fetch auctions");
-            }
-        };
-
-        fetchAuctionsForUsers();
-    }, [users]);
-
-    const handleUserSelect = (userId) => {
+    // 📥 Fetch auctions for selected user
+    const handleUserSelect = async (userId) => {
         setSelectedUserId(userId);
+        try {
+            const res = await axiosInstance.get(`/api/auction-items/user/${userId}`);
+            setUserAuctions(res.data);
+        } catch (err) {
+            console.error(`Failed to fetch auctions for user ${userId}:`, err);
+            setUserAuctions([]);
+        }
     };
 
     const handleDeleteUser = async (userId) => {
-        if (window.confirm("Are you sure you want to delete this user? This will also delete all their auctions.")) {
-            setError("");
-            setSuccessMessage("");
+        if (window.confirm("Are you sure you want to delete this user?")) {
             try {
-                await axios.delete(`http://localhost:8080/api/users/${userId}`, {
-                    withCredentials: true,
-                    timeout: 10000
-                });
-                
-                setUsers(prevUsers => prevUsers.filter(user => user.user_id !== userId));
-                setAuctions(prevAuctions => {
-                    const newAuctions = { ...prevAuctions };
-                    delete newAuctions[userId];
-                    return newAuctions;
-                });
+                await axiosInstance.delete(`/api/users/delete/${userId}`);
+                setUsers((prev) => prev.filter((user) => user.userId !== userId));
+                setDeleteError(null); 
                 if (selectedUserId === userId) {
                     setSelectedUserId(null);
+                    setUserAuctions([]);
                 }
-                setSuccessMessage("User deleted successfully");
             } catch (err) {
-                setError(err.response?.data?.message || err.message || "Failed to delete user");
+                console.error("Failed to delete user:", err);
+                setDeleteError(`Failed to delete user: ${err.response?.data || err.message}`);
             }
         }
     };
 
     return (
-        <div>
+        <>
             <Navbar />
             <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
-                {error && (
-                    <div style={{ color: "red", marginBottom: "10px", textAlign: "center" }}>
-                        {error}
-                        <button 
-                            onClick={() => fetchUsers()} 
-                            style={{ marginLeft: "10px", padding: "2px 10px" }}
-                        >
-                            Retry
-                        </button>
-                    </div>
-                )}
-                {successMessage && (
-                    <div style={{ color: "green", marginBottom: "10px", textAlign: "center" }}>
-                        {successMessage}
-                    </div>
-                )}
-                
-                <section style={{ marginBottom: "40px" }}>
+                {/* Users Table */}
+                <div style={{ marginBottom: "40px" }}>
                     <h2>Users Table</h2>
-                    <table style={tableStyles}>
+                    {deleteError && (
+                        <div style={{ color: "red", marginBottom: "10px" }}>
+                            {deleteError}
+                        </div>
+                    )}
+                    <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
                         <thead>
-                            <tr>
-                                <th style={thStyles}>User ID</th>
-                                <th style={thStyles}>Username</th>
-                                <th style={thStyles}>Email</th>
-                                <th style={thStyles}>Total Auctions</th>
-                                <th style={thStyles}>Actions</th>
+                            <tr style={{ backgroundColor: "#f2f2f2" }}>
+                                <th style={{ padding: "10px", border: "1px solid #ddd" }}>User ID</th>
+                                <th style={{ padding: "10px", border: "1px solid #ddd" }}>Username</th>
+                                <th style={{ padding: "10px", border: "1px solid #ddd" }}>Email</th>
+                                <th style={{ padding: "10px", border: "1px solid #ddd" }}>Total Auctions</th>
+                                <th style={{ padding: "10px", border: "1px solid #ddd" }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {Array.isArray(users) && users.length > 0 ? (
-                                users.map((user) => (
-                                    <tr 
-                                        key={user.user_id || Math.random()}
-                                        onClick={() => handleUserSelect(user.user_id)}
-                                        style={{ 
-                                            cursor: "pointer",
-                                            ...(selectedUserId === user.user_id && { backgroundColor: "#e6f3ff" })
-                                        }}
-                                    >
-                                        <td style={tdStyles}>{user.user_id}</td>
-                                        <td style={tdStyles}>{user.username || 'N/A'}</td>
-                                        <td style={tdStyles}>{user.email || 'N/A'}</td>
-                                        <td style={tdStyles}>
-                                            {(auctions[user.user_id] || []).length}
-                                        </td>
-                                        <td style={tdStyles}>
-                                            <button
-                                                style={{ 
-                                                    backgroundColor: "#ff4444", 
-                                                    color: "white", 
-                                                    border: "none", 
-                                                    padding: "5px 10px", 
-                                                    cursor: "pointer",
-                                                    borderRadius: "4px",
-                                                    transition: "background-color 0.2s"
-                                                }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteUser(user.user_id);
-                                                }}
-                                                onMouseOver={(e) => e.target.style.backgroundColor = "#cc0000"}
-                                                onMouseOut={(e) => e.target.style.backgroundColor = "#ff4444"}
-                                            >
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="5" style={{ ...tdStyles, textAlign: "center" }}>
-                                        No users found
+                            {users.map((user) => (
+                                <tr
+                                    key={user.userId}
+                                    onClick={() => handleUserSelect(user.userId)}
+                                    style={{
+                                        cursor: "pointer",
+                                        ...(selectedUserId === user.userId && { backgroundColor: "#e6f3ff" }),
+                                    }}
+                                >
+                                    <td style={{ padding: "10px", border: "1px solid #ddd" }}>{user.userId}</td>
+                                    <td style={{ padding: "10px", border: "1px solid #ddd" }}>{user.username}</td>
+                                    <td style={{ padding: "10px", border: "1px solid #ddd" }}>{user.email}</td>
+                                    <td style={{ padding: "10px", border: "1px solid #ddd" }}>{user.totalAuctions}</td>
+                                    <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                                        <button
+                                            style={{
+                                                backgroundColor: "#ff4444",
+                                                color: "white",
+                                                border: "none",
+                                                padding: "5px 10px",
+                                                cursor: "pointer",
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteUser(user.userId);
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
                                     </td>
                                 </tr>
-                            )}
+                            ))}
                         </tbody>
                     </table>
-                </section>
+                </div>
 
-                <section>
+                {/* Auctions Table */}
+                <div>
                     <h2>{selectedUserId ? `Auctions for User ${selectedUserId}` : "Select a User to View Auctions"}</h2>
                     {selectedUserId && (
-                        <table style={tableStyles}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
                             <thead>
-                                <tr>
-                                    <th style={thStyles}>Auction ID</th>
-                                    <th style={thStyles}>Title</th>
-                                    <th style={thStyles}>Status</th>
-                                    <th style={thStyles}>Number of Bids</th>
+                                <tr style={{ backgroundColor: "#f2f2f2" }}>
+                                    <th style={{ padding: "10px", border: "1px solid #ddd" }}>Auction ID</th>
+                                    <th style={{ padding: "10px", border: "1px solid #ddd" }}>Item Name</th>
+                                    <th style={{ padding: "10px", border: "1px solid #ddd" }}>Auction Type</th>
+                                    <th style={{ padding: "10px", border: "1px solid #ddd" }}>Price (Start → Buy Now)</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {Array.isArray(auctions[selectedUserId]) && auctions[selectedUserId].length > 0 ? (
-                                    auctions[selectedUserId].map((auction) => (
-                                        <tr key={auction.auctionItemId || Math.random()}>
-                                            <td style={tdStyles}>{auction.auctionItemId}</td>
-                                            <td style={tdStyles}>{auction.itemName || 'N/A'}</td>
-                                            <td style={tdStyles}>
-                                                <span style={{
-                                                    color: auction.status === "Active" ? "#28a745" : "#dc3545",
-                                                    fontWeight: "bold"
-                                                }}>
-                                                    {auction.status || 'N/A'}
-                                                </span>
+                                {userAuctions.length > 0 ? (
+                                    userAuctions.map((auction) => (
+                                        <tr key={auction.auctionItemId}>
+                                            <td style={{ padding: "10px", border: "1px solid #ddd" }}>{auction.auctionItemId}</td>
+                                            <td style={{ padding: "10px", border: "1px solid #ddd" }}>{auction.itemName}</td>
+                                            <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                                                {auction.auctionType?.auctionTypeName || "N/A"}
                                             </td>
-                                            <td style={tdStyles}>{auction.bidCount || 0}</td>
+                                            <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                                                ${auction.startingPrice} → ${auction.buyNowPrice}
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="4" style={{ ...tdStyles, textAlign: "center" }}>
+                                        <td colSpan="4" style={{ textAlign: "center", padding: "10px" }}>
                                             No auctions found for this user
                                         </td>
                                     </tr>
@@ -220,10 +145,10 @@ const AdminControlPanel = () => {
                             </tbody>
                         </table>
                     )}
-                </section>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
-export default AdminControlPanel;   
+export default AdminControlPanel;

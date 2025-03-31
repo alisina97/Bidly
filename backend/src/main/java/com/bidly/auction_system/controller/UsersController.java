@@ -94,5 +94,13 @@ public ResponseEntity<String> logout(HttpSession session) {
     return ResponseEntity.ok("User logged out successfully.");
 }
 
-
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
+        boolean deleted = userService.deleteUserById(userId);
+        if (deleted) {
+            return ResponseEntity.ok("User deleted successfully.");
+        } else {
+            return ResponseEntity.status(404).body("User not found.");
+        }
+    }
 }

@@ -82,9 +82,14 @@ public class UsersService {
     public Optional<Users> findByUsernameAndPassword(String username, String password) {
         return userRepository.findByUsernameAndPassword(username, password);
     }
-    
 
-    
+    public boolean deleteUserById(Long userId) {
+        if (userRepository.existsById(userId)) {
+            userRepository.deleteById(userId);
+            return true;
+        }
+        return false;
+    }
     
  
 }
