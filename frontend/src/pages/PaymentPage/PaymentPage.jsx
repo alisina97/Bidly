@@ -1,118 +1,254 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Navbar from '../../components/Navbar/Navbar';
+import Navbar from "../../components/Navbar/Navbar";
 
 const PaymentPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const { auctionItemId, winner, auctionItem, userDetails, expeditedShipping, totalAmount } = location.state || {};
+    // Destructure values passed via React Router's state
+    const {
+        auctionItemId,
+        winner,
+        auctionItem,
+        userDetails,
+        expeditedShipping,
+        totalAmount
+    } = location.state || {};
 
     const [loggedInUserId, setLoggedInUserId] = useState(null);
     const [paymentDetails, setPaymentDetails] = useState(null);
     const [error, setError] = useState("");
 
+    // User-entered payment info
     const [cardNumber, setCardNumber] = useState("");
     const [cardName, setCardName] = useState("");
     const [expiryDate, setExpiryDate] = useState("");
     const [securityCode, setSecurityCode] = useState("");
 
-    // ✅ Fetch user session
+    // Track whether the auction item is already paid
+    const [isPaid, setIsPaid] = useState(false);
+
+    // We'll store the response from mark-paid here to display on screen
+    const [markPaidResponse, setMarkPaidResponse] = useState(null);
+
+    // 1) Fetch user session to get logged-in user ID
     useEffect(() => {
-        axios.get("http://localhost:8080/api/users/me", { withCredentials: true })
-            .then(res => {
-                console.log("User Session Response:", res.data);
-                setLoggedInUserId(res.data.user_id); // ✅ using user_id based on your backend
+        axios
+            .get("http://localhost:8080/api/users/me", { withCredentials: true })
+            .then((res) => {
+                setLoggedInUserId(res.data.user_id);
             })
             .catch(() => setError("User session not found. Please log in."));
     }, []);
 
-    // ✅ Fetch payment details after userId is set
+    // 2) Fetch winner (to check `paidFor`) AND also fetch payment details.
+    //    This ensures we know if it's already paid, and we also get user shipping info.
     useEffect(() => {
-        console.log("loggedInUserId:", loggedInUserId);
-        console.log("auctionItemId:", auctionItemId);
+        if (!auctionItemId || !loggedInUserId) return;
 
-        if (!loggedInUserId || !auctionItemId) return;
+        console.log("Auction Item ID from state:", auctionItemId);
 
-        axios.get("http://localhost:8080/api/payment/user-details", {
-            params: { userId: loggedInUserId, auctionItemId },
-            withCredentials: true
-        })
-            .then(res => {
-                console.log("Payment Details Response:", res.data);
-                setPaymentDetails(res.data);
+        // First, get the Winner from /api/winners/{auctionItemId} to see if paidFor is true
+        axios
+            .get(`http://localhost:8080/api/winners/${auctionItemId}`, { withCredentials: true })
+            .then((winnerRes) => {
+                // If the winner object has `paidFor = true`, disable payment
+                if (winnerRes.data?.paidFor) {
+                    setIsPaid(true);
+                }
+                // Then fetch the shipping/payment details
+                return axios.get("http://localhost:8080/api/payment/user-details", {
+                    params: { userId: loggedInUserId, auctionItemId },
+                    withCredentials: true,
+                });
+            })
+            .then((detailsRes) => {
+                setPaymentDetails(detailsRes.data);
                 setError("");
             })
-            .catch(err => {
-                console.error("Payment Details Error:", err);
-                setError("Failed to fetch payment details. Please check the API.");
+            .catch((err) => {
+                console.error(err);
+                setError("Failed to fetch winner or payment details. Please check the API.");
                 setPaymentDetails(null);
             });
-    }, [loggedInUserId]);
+    }, [auctionItemId, loggedInUserId]);
 
-    const handlePayment = () => {
-        const arrivalDate = new Date();
-        arrivalDate.setDate(arrivalDate.getDate() + 3);
-        const formattedArrivalDate = arrivalDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    // 3) Handle Payment
+    const handlePayment = async () => {
+        // If already paid, don't process further
+        if (isPaid) return;
 
-        const receiptData = {
-            firstName: paymentDetails?.firstName || "N/A",
-            lastName: paymentDetails?.lastName || "N/A",
-            streetNumber: paymentDetails?.streetNumber || "N/A",
-            streetName: paymentDetails?.streetName || "N/A",
-            city: paymentDetails?.city || "N/A",
-            province: paymentDetails?.province || "N/A",
-            country: paymentDetails?.country || "N/A",
-            postalCode: paymentDetails?.postalCode || "N/A",
-            totalAmountPaid: totalAmount,
-            arrivalDate: formattedArrivalDate,
-            itemId: auctionItemId,
-            itemName: auctionItem?.itemName || "Auction Item",
-        };
+        try {
+            // 3a. Call the backend endpoint to mark as paid in DB
+            const response = await axios.post(
+                "http://localhost:8080/api/winners/mark-paid",
+                null,
+                {
+                    params: { auctionItemId },
+                    withCredentials: true,
+                }
+            );
 
-        navigate("/receipt", { state: receiptData });
+            // 3b. On success, set local state to reflect paid
+            setIsPaid(true);
+            setMarkPaidResponse(response.data);
+
+            // 3c. Build the arrival date (3 days from now)
+            const arrivalDate = new Date();
+            arrivalDate.setDate(arrivalDate.getDate() + 3);
+            const formattedArrivalDate = arrivalDate.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+            });
+
+            // 3d. Prepare receipt data
+            const receiptData = {
+                firstName: paymentDetails?.firstName || "N/A",
+                lastName: paymentDetails?.lastName || "N/A",
+                streetNumber: paymentDetails?.streetNumber || "N/A",
+                streetName: paymentDetails?.streetName || "N/A",
+                city: paymentDetails?.city || "N/A",
+                country: paymentDetails?.country || "N/A",
+                postalCode: paymentDetails?.postalCode || "N/A",
+                totalAmountPaid: totalAmount,
+                arrivalDate: formattedArrivalDate,
+                itemId: auctionItemId,
+                itemName: auctionItem?.itemName || "Auction Item",
+            };
+
+            // 3e. Navigate to the receipt page with the above data
+            navigate("/receipt", { state: receiptData });
+
+        } catch (err) {
+            console.error("Error marking winner as paid:", err);
+            setError("Could not mark as paid. Please try again.");
+        }
     };
 
     return (
         <>
-        <Navbar />
-        <div style={{ textAlign: "center", padding: "20px", maxWidth: "900px", margin: "auto" }}>
-            <h2>Payment Details</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            <Navbar />
+            <div style={{ textAlign: "center", padding: "20px", maxWidth: "900px", margin: "auto" }}>
+                <h2>Payment Details</h2>
+                {error && <p style={{ color: "red" }}>{error}</p>}
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
-                {/* Left Column */}
-                <div style={{ flex: 1, border: "1px solid #ccc", padding: "15px", borderRadius: "8px", backgroundColor: "#f9f9f9", textAlign: "left" }}>
-                    <h3>User Information</h3>
-                    <p><strong>First Name:</strong> {paymentDetails?.firstName || "Loading..."}</p>
-                    <p><strong>Last Name:</strong> {paymentDetails?.lastName || "Loading..."}</p>
+                {/* Display the result from mark-paid if we have any */}
+                {markPaidResponse && (
+                    <div style={{ marginBottom: "10px" }}>
+                        <strong>Mark-Paid Response:</strong>{" "}
+                        <pre>{JSON.stringify(markPaidResponse, null, 2)}</pre>
+                    </div>
+                )}
 
-                    <h3>Shipping Address</h3>
-                    <p><strong>Street Number:</strong> {paymentDetails?.streetNumber || "Loading..."}</p>
-                    <p><strong>Street Name:</strong> {paymentDetails?.streetName || "Loading..."}</p>
-                    <p><strong>City:</strong> {paymentDetails?.city || "Loading..."}</p>
-                    <p><strong>Province:</strong> {paymentDetails?.province || "Loading..."}</p>
-                    <p><strong>Country:</strong> {paymentDetails?.country || "Loading..."}</p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
+                    {/* Left Column: User & Shipping Info */}
+                    <div
+                        style={{
+                            flex: 1,
+                            border: "1px solid #ccc",
+                            padding: "15px",
+                            borderRadius: "8px",
+                            backgroundColor: "#f9f9f9",
+                            textAlign: "left",
+                        }}
+                    >
+                        <h3>User Information</h3>
+                        <p>
+                            <strong>First Name:</strong>{" "}
+                            {paymentDetails?.firstName || "Loading..."}
+                        </p>
+                        <p>
+                            <strong>Last Name:</strong>{" "}
+                            {paymentDetails?.lastName || "Loading..."}
+                        </p>
 
-                    <h3>Item Details</h3>
-                    <p><strong>Total Price:</strong> ${totalAmount}</p>
-                </div>
+                        <h3>Shipping Address</h3>
+                        <p>
+                            <strong>Street Number:</strong>{" "}
+                            {paymentDetails?.streetNumber || "Loading..."}
+                        </p>
+                        <p>
+                            <strong>Street Name:</strong>{" "}
+                            {paymentDetails?.streetName || "Loading..."}
+                        </p>
+                        <p>
+                            <strong>City:</strong>{" "}
+                            {paymentDetails?.city || "Loading..."}
+                        </p>
+                        <p>
+                            <strong>Country:</strong>{" "}
+                            {paymentDetails?.country || "Loading..."}
+                        </p>
 
-                {/* Right Column */}
-                <div style={{ flex: 1, padding: "15px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#fff", textAlign: "left" }}>
-                    <h3>Card Details</h3>
-                    <input type="text" placeholder="Card Number" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} style={{ width: "100%", padding: "8px", marginBottom: "10px" }} />
-                    <input type="text" placeholder="Name on Card" value={cardName} onChange={(e) => setCardName(e.target.value)} style={{ width: "100%", padding: "8px", marginBottom: "10px" }} />
-                    <input type="text" placeholder="Expiry Date (MM/YY)" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} style={{ width: "100%", padding: "8px", marginBottom: "10px" }} />
-                    <input type="text" placeholder="Security Code (CVV)" value={securityCode} onChange={(e) => setSecurityCode(e.target.value)} style={{ width: "100%", padding: "8px", marginBottom: "10px" }} />
+                        <h3>Item Details</h3>
+                        <p>
+                            <strong>Total Price:</strong> ${totalAmount}
+                        </p>
+                    </div>
 
-                    <button onClick={handlePayment} style={{ backgroundColor: "green", color: "white", padding: "10px", border: "none", borderRadius: "5px", cursor: "pointer", width: "100%" }}>
-                        Proceed to Payment
-                    </button>
+                    {/* Right Column: Payment Form & Button */}
+                    <div
+                        style={{
+                            flex: 1,
+                            padding: "15px",
+                            border: "1px solid #ccc",
+                            borderRadius: "8px",
+                            backgroundColor: "#fff",
+                            textAlign: "left",
+                        }}
+                    >
+                        <h3>Card Details</h3>
+                        <input
+                            type="text"
+                            placeholder="Card Number"
+                            value={cardNumber}
+                            onChange={(e) => setCardNumber(e.target.value)}
+                            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Name on Card"
+                            value={cardName}
+                            onChange={(e) => setCardName(e.target.value)}
+                            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Expiry Date (MM/YY)"
+                            value={expiryDate}
+                            onChange={(e) => setExpiryDate(e.target.value)}
+                            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Security Code (CVV)"
+                            value={securityCode}
+                            onChange={(e) => setSecurityCode(e.target.value)}
+                            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+                        />
+
+                        {/* Disable button if already paid */}
+                        <button
+                            onClick={handlePayment}
+                            style={{
+                                backgroundColor: isPaid ? "gray" : "green",
+                                color: "white",
+                                padding: "10px",
+                                border: "none",
+                                borderRadius: "5px",
+                                cursor: isPaid ? "not-allowed" : "pointer",
+                                width: "100%",
+                            }}
+                            disabled={isPaid}
+                        >
+                            {isPaid ? "Already Paid" : "Yes Proceed to Payment"}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
         </>
     );
 };

@@ -28,7 +28,7 @@ function App() {
         <Route path="/edit/:auctionId" element={<EditAuctionPage />} />
         <Route path='/bidend' exact element ={<BidEnd/>} />
         <Route path='/auction/bid/:auctionId' exact element ={<Bid/>} />
-		    <Route path='/myAuctions/:userId' exact element ={<UserAuctionCataloguePage/>} />
+		<Route path='/myAuctions/:userId' exact element ={<UserAuctionCataloguePage/>} />
         <Route path='/adminLogin' exact element ={<AdminLogin/>} />
         <Route path='/adminControlPanel' exact element ={<AdminControlPanel/>} />
       </Routes>

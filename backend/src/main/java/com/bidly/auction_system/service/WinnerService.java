@@ -21,18 +21,18 @@ public class WinnerService {
     @Autowired
     private AuctionItemRepository auctionItemRepository;
 
-    //  Get the winner by auction item ID
+    // 1. Get the winner by auction item ID
     public Winner getWinnerByAuctionItemId(Long auctionItemId) {
         return winnerRepository.findByAuctionItemAuctionItemId(auctionItemId);
     }
 
-    //  Check if a user is the winner
+    // 2. Check if a user is the winner
     public boolean isUserWinner(Long userId, Long auctionItemId) {
         Winner winner = winnerRepository.findByAuctionItemAuctionItemId(auctionItemId);
         return winner != null && winner.getUser().getUserId().equals(userId);
     }
 
-    //  Add a winner to the database
+    // 3. Add a winner to the database
     public Winner addWinner(Long userId, Long auctionItemId, Long winningPrice) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
@@ -40,7 +40,31 @@ public class WinnerService {
         AuctionItem auctionItem = auctionItemRepository.findById(auctionItemId)
                 .orElseThrow(() -> new RuntimeException("Auction item not found!"));
 
+        // paidFor defaults to false, so it’s unpaid at creation
         Winner winner = new Winner(auctionItem, user, winningPrice);
         return winnerRepository.save(winner);
+    }
+
+    /**
+     * 4. Mark a winner as paid. You can find the winner either by
+     *    `winnerId` or `auctionItemId`. Here we show an example by
+     *    looking up via `auctionItemId`.
+     */
+    public Winner markWinnerAsPaid(Long auctionItemId) {
+        Winner winner = winnerRepository.findByAuctionItemAuctionItemId(auctionItemId);
+        if (winner == null) {
+            throw new RuntimeException("Winner not found for auction item ID: " + auctionItemId);
+        }
+        // Set paidFor to true
+        winner.setPaidFor(true);
+        return winnerRepository.save(winner);
+    }
+
+    /**
+     * 5. Check if the winner for a specific auction item has paid.
+     */
+    public boolean isPaidFor(Long auctionItemId) {
+        Winner winner = winnerRepository.findByAuctionItemAuctionItemId(auctionItemId);
+        return (winner != null && winner.isPaidFor());
     }
 }
