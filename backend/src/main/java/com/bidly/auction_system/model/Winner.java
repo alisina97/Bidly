@@ -28,6 +28,8 @@ public class Winner {
     @Column(nullable = false, name = "winning_price")
     private Long winningPrice; // 
 
+    @Column(nullable = false, name = "paid_for")
+    private boolean paidFor = false;
     // Manually define constructor 
     public Winner(AuctionItem auctionItem, Users user, Long winningPrice) {
         this.auctionItem = auctionItem;
@@ -35,4 +37,3 @@ public class Winner {
         this.winningPrice = winningPrice;
     }
 }
-
