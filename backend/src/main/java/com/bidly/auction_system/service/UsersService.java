@@ -78,6 +78,7 @@ public class UsersService {
 
     public boolean deleteUserById(Long userId) {
         if (userRepository.existsById(userId)) {
+        	userDetailsRepository.deleteByUserId(userId);
             userRepository.deleteById(userId);
             return true;
         }
