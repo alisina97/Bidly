@@ -75,6 +75,7 @@ function SignUp() {
         postalCode,
         streetNumber,
         streetName,
+		isAdmin: false,
       }).toString();
       
       const response = await axiosInstance.post(`/api/users/register?${queryParams}`);
