@@ -4,7 +4,7 @@ import com.bidly.auction_system.model.Users;
 import com.bidly.auction_system.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus; // ✅ Import HttpStatus
+import org.springframework.http.HttpStatus; 
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 
@@ -17,7 +17,7 @@ import java.util.Optional;
 public class UsersController {
 
     @Autowired
-    private UsersService userService; // ✅ Use this consistently
+    private UsersService userService; 
 
     // Register a new user
     @PostMapping("/register")
@@ -81,7 +81,7 @@ public class UsersController {
         }
 
         Long userId = (Long) userIdObj; // Convert session object to Long
-        Optional<Users> userOptional = userService.getUserById(userId); // ✅ Fix variable name
+        Optional<Users> userOptional = userService.getUserById(userId); 
 
         if (userOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
@@ -90,8 +90,8 @@ public class UsersController {
         Users user = userOptional.get();
 
         return ResponseEntity.ok(Map.of(
-            "user_id", user.getUserId(), // ✅ Ensure this method exists
-            "isAdmin", user.isAdmin() // ✅ Ensure this method exists
+            "user_id", user.getUserId(),
+            "isAdmin", user.isAdmin() 
         ));
     }
 
