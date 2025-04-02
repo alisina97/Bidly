@@ -15,7 +15,6 @@ import java.util.Optional;
 @Service
 public class UsersService {
 
-	// need to connect all tables being used in creating a user
     @Autowired
     private UsersRepository userRepository;
     
@@ -25,11 +24,10 @@ public class UsersService {
     @Autowired
     private UserDetailsRepository userDetailsRepository;
 
-    //  Add a new user (with uniqueness check)
+    // Add a new user (with uniqueness check)
     public Users registerUser(String username, String email, String password, String firstName, String lastName, 
-    						  String country, String city, String postalCode,String streetNumber, String streetName) {
-    	
-    	
+                              String country, String city, String postalCode, String streetNumber, String streetName, boolean isAdmin) {
+        
         boolean emailExists = userRepository.findByEmail(email).isPresent();
         boolean usernameExists = userRepository.findByUsername(username).isPresent();
 
@@ -40,41 +38,36 @@ public class UsersService {
             throw new IllegalArgumentException("Email already exists!");
         }
         if (usernameExists) {
-        	throw new IllegalArgumentException("Username already exists!");
+            throw new IllegalArgumentException("Username already exists!");
         }
-            
-    	
-    	
+        
         Address address = new Address(country, city, postalCode, streetName, streetNumber);
         address = addressRepository.save(address);
         
-        
         Users user = new Users(username, email, password);
+        user.setAdmin(isAdmin);
         user = userRepository.save(user);
         
         UserDetails userDetails = new UserDetails(user, firstName, lastName, address);
         userDetailsRepository.save(userDetails);
-		return user;
         
-        
-        
+        return user;
     }
 
-    //  Get all users
+    // Get all users
     public List<Users> getAllUsers() {
         return userRepository.findAll();
     }
 
-    //  Get user by email
+    // Get user by email
     public Optional<Users> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    public Optional<Users> getUserById(Long user_id) {
-        return userRepository.findById(user_id);
+    public Optional<Users> getUserById(Long userId) {
+        return userRepository.findById(userId);
     }
 
-    
     public boolean authenticateUser(String username, String password) {
         return userRepository.findByUsernameAndPassword(username, password).isPresent();
     }
@@ -85,13 +78,22 @@ public class UsersService {
 
     public boolean deleteUserById(Long userId) {
         if (userRepository.existsById(userId)) {
+        	userDetailsRepository.deleteByUserId(userId);
             userRepository.deleteById(userId);
             return true;
         }
         return false;
     }
-    
- 
+
+    // Promote a user to admin
+    public boolean promoteUserToAdmin(Long userId) {
+        Optional<Users> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            Users user = userOptional.get();
+            user.setAdmin(true);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
 }
-
-

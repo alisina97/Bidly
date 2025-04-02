@@ -26,11 +26,15 @@ public class Users {
     @Column(nullable = false)
     private String password; // Store hashed passwords in real applications
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isAdmin = false;
+
     // Custom constructor
     public Users(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.isAdmin = false;
     }
 
     public Long getUserId() {
