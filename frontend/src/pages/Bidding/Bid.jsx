@@ -14,7 +14,6 @@ function Bid() {
   const [timeRemaining, setTimeRemaining] = useState('');
   const navigate = useNavigate();
   const isOwnAuction = auctionItem && userId === auctionItem.userId;
-  
 
   useEffect(() => {
     fetchUserSession();
@@ -102,11 +101,11 @@ function Bid() {
       setTimeout(() => {
         navigate('/bidend', {
           state: {
-            auctionItemId: auctionId
-          }
+            auctionItemId: auctionId,
+          },
         });
       }, 1000);
-          } catch (err) {
+    } catch (err) {
       handleError(err, 'Failed to complete purchase.');
     }
   };
@@ -130,6 +129,15 @@ function Bid() {
     const minBid = highestBid ? highestBid.bidAmount + 1 : auctionItem.startingPrice;
     if (parseFloat(bidAmount) < minBid) {
       setError(`Your bid must be at least $${minBid}.`);
+      return;
+    }
+
+    // ✅ NEW LOGIC: Disallow bids higher than buyNowPrice
+    if (auctionItem.buyNowPrice && parseFloat(bidAmount) >= auctionItem.buyNowPrice) {
+      setError(
+        `Your bid is above the Buy Now price ($${auctionItem.buyNowPrice}). ` +
+        `Please click "Buy Now" to purchase immediately.`
+      );
       return;
     }
 
@@ -169,7 +177,7 @@ function Bid() {
             </p>
             <p className='mt-2 font-semibold'>Time Remaining: {timeRemaining}</p>
 
-            {/* ✅ Show Buy Now button if categoryId === 2 */}
+            {/* ✅ Show Buy Now button if the Auction Type supports it (or if you want for any type). */}
             {auctionItem.auctionType?.auctionTypeId === 2 && (
               <button
                 className='mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600'

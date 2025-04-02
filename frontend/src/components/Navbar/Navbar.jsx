@@ -15,12 +15,11 @@ const Navbar = () => {
                 const response = await axios.get("http://localhost:8080/api/users/me", {
                     withCredentials: true,
                 });
-				
-				console.log("User session response:", response.data); // Debugging log
-
+                
+                console.log("User session response:", response.data); // Debugging log
 
                 if (response.data) {
-                    setUserId(response.data.userId);
+                    setUserId(response.data.userId); // Adjust if your backend uses a different key
                     setIsLoggedIn(true);
                     setIsAdmin(response.data.isAdmin); 
                 }
@@ -61,21 +60,41 @@ const Navbar = () => {
                 <ul className="nav-links">
                     <li><Link to="/home" className="nav-link">Home</Link></li>
                     <li>
-                        <Link to={isLoggedIn ? "/sell" : "/login"} className="nav-link">
+                        <Link 
+                            to={isLoggedIn ? "/sell" : "/login"} 
+                            className="nav-link"
+                        >
                             Sell
                         </Link>
                     </li>
                     <li>
-                        <Link to={isLoggedIn && userId ? `/myAuctions/${userId}` : "/login"} className="nav-link">
+                        <Link 
+                            to={isLoggedIn && userId ? `/myAuctions/${userId}` : "/login"} 
+                            className="nav-link"
+                        >
                             My Auctions
                         </Link>
                     </li>
+                    
+                    {/* NEW: "User Dashboard" link */}
+                    <li>
+                        <Link 
+                            to={isLoggedIn ? "/userDash" : "/login"} 
+                            className="nav-link"
+                        >
+                            User Dashboard
+                        </Link>
+                    </li>
+
                     {isAdmin && (
                         <li>
-                            <Link to="/adminControlPanel" className="nav-link">Admin Panel</Link>
+                            <Link to="/adminControlPanel" className="nav-link">
+                                Admin Panel
+                            </Link>
                         </li>
                     )}
                 </ul>
+
                 <button className="logout-btn" onClick={handleAuthAction}>
                     {isLoggedIn ? "Sign Out" : "Login/Register"}
                 </button>
