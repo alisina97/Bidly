@@ -32,7 +32,7 @@ public class AuctionStatusService {
     /**
      *  Create a new Auction Status when the auction starts
      */
-    public AuctionStatus createAuctionStatus(Long auctionItemId, Long startingPrice, Long duration) {
+    public AuctionStatus createAuctionStatus(Long auctionItemId, Long startingPrice, Long endTimeEpoch) {
         //  Fetch auction item from database to ensure it contains full details
         AuctionItem auctionItem = auctionItemRepository.findById(auctionItemId)
                 .orElseThrow(() -> new RuntimeException("Auction Item not found!"));
@@ -40,7 +40,7 @@ public class AuctionStatusService {
         AuctionStatus auctionStatus = new AuctionStatus();
         auctionStatus.setAuctionItem(auctionItem); //  Ensuring full details
         auctionStatus.setCurrentPrice(startingPrice);
-        auctionStatus.setRemainingTime(duration);
+        auctionStatus.setEndTimeEpoch(endTimeEpoch); // Store the absolute auction end time
         auctionStatus.setItemStatus(AuctionStatus.ItemStatus.NOT_SOLD);
 
         return auctionStatusRepository.save(auctionStatus);

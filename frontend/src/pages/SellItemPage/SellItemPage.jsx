@@ -90,6 +90,7 @@ const CreateAuctionPage = () => {
 			// Check if auction end date is not in the past or the current date
 			const currentDate = new Date();
 			const endDate = new Date(auctionEndDate);
+			const epochEndTime = endDate.getTime(); // Convert to epoch time in milliseconds
 
 			// Calculate the duration between current date and auction end date
 			const durationInSeconds = Math.floor((endDate - currentDate) / 1000); // Convert milliseconds to seconds
@@ -121,7 +122,7 @@ const CreateAuctionPage = () => {
 				auctionData.append("buyNowPrice", auctionType === "dutch" ? parseFloat(buyNowPrice) : 0); // Only include buyNowPrice for Dutch auctions
 				auctionData.append("auctionTypeId", auctionTypeMap[auctionType]);
 				auctionData.append("categoryId", category);
-				auctionData.append("auctionEndDate", auctionEndDate);
+				auctionData.append("auctionEndDate", epochEndTime);
 				auctionData.append("userId", userId); // ✅ FIX: Ensure user ID is included
 				try {
 					// Send auction data to the backend

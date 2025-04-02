@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Entity
 @Data
 @Table(name = "auction_status")
@@ -25,19 +24,19 @@ public class AuctionStatus {
     @Column(nullable = false, name = "current_price")
     private Long currentPrice;
 
-    @Column(nullable = false , name = "remaining_time")
-    private Long remainingTime; // Time left for auction
+    @Column(nullable = false, name = "end_time_epoch")
+    private Long endTimeEpoch; // Store Unix timestamp (seconds)
 
     @Enumerated(EnumType.STRING) // Store enum as a string
-    @Column(nullable = false , name = "item_status")
+    @Column(nullable = false, name = "item_status")
     private ItemStatus itemStatus;
 
     public AuctionStatus() {}
 
-    public AuctionStatus(AuctionItem auctionItem, Long currentPrice, Long remainingTime, ItemStatus itemStatus) {
+    public AuctionStatus(AuctionItem auctionItem, Long currentPrice, Long endTimeEpoch, ItemStatus itemStatus) {
         this.auctionItem = auctionItem;
         this.currentPrice = currentPrice;
-        this.remainingTime = remainingTime;
+        this.endTimeEpoch = endTimeEpoch;
         this.itemStatus = itemStatus;
     }
 

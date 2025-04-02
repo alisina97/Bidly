@@ -5,7 +5,6 @@ import com.bidly.auction_system.service.AuctionStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/api/auction-status")
 public class AuctionStatusController {
@@ -18,7 +17,9 @@ public class AuctionStatusController {
     public AuctionStatus createAuctionStatus(@RequestParam Long auctionItemId,
                                              @RequestParam Long startingPrice,
                                              @RequestParam Long durationSeconds) {
-        return auctionStatusService.createAuctionStatus(auctionItemId, startingPrice, durationSeconds);
+        // Convert duration (seconds) into epoch time
+        long endTimeEpoch = (System.currentTimeMillis() / 1000) + durationSeconds;
+        return auctionStatusService.createAuctionStatus(auctionItemId, startingPrice, endTimeEpoch);
     }
 
     // ✅ Get auction status by item ID
