@@ -10,7 +10,6 @@ import EditAuctionPage from './pages/EditAuctionPage/EditAuctionPage'
 import BidEnd from './pages/BidEnd/BidEnd'
 import UserAuctionCataloguePage from './pages/UserAuctionCataloguePage/UserAuctionCataloguePage'
 import Bid from './pages/Bidding/Bid'
-import AdminLogin from './pages/Admin/AdminLogin'
 import AdminControlPanel from './pages/Admin/AdminControlPanel'
 
 function App() {
@@ -29,7 +28,6 @@ function App() {
         <Route path='/bidend' exact element ={<BidEnd/>} />
         <Route path='/auction/bid/:auctionId' exact element ={<Bid/>} />
 		<Route path='/myAuctions/:userId' exact element ={<UserAuctionCataloguePage/>} />
-        <Route path='/adminLogin' exact element ={<AdminLogin/>} />
         <Route path='/adminControlPanel' exact element ={<AdminControlPanel/>} />
       </Routes>
     </Router>
