@@ -68,7 +68,6 @@ public class BidsService {
     public Optional<Bids> getHighestBidForAuctionItem(Long auctionItemId) {
         AuctionItem auctionItem = auctionItemRepository.findById(auctionItemId)
                 .orElseThrow(() -> new RuntimeException("Auction item not found!"));
-        
         return Optional.ofNullable(
             bidsRepository.findTopByAuctionItemOrderByBidAmountDesc(auctionItem)
         );
