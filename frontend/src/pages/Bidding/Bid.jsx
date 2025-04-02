@@ -8,8 +8,7 @@ function Bid() {
   const [auctionItem, setAuctionItem] = useState(null);
   const [auctionStatus, setAuctionStatus] = useState(null);
   const [highestBid, setHighestBid] = useState(null);
-  const [winningBid, setWinningBid] = useState(null); // New state for winning bid
-  const [bidAmount, setBidAmount] = useState('');
+  const [winningBid, setWinningBid] = useState(null);
   const [userId, setUserId] = useState(null);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -48,7 +47,6 @@ function Bid() {
       if (totalSeconds <= 0) {
         setTimeRemaining('Auction Ended');
         clearInterval(timerInterval);
-        // Set the highest bid as winning bid when auction ends
         if (highestBid) {
           setWinningBid(highestBid);
         }
