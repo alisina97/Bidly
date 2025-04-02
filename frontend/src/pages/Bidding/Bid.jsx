@@ -6,34 +6,45 @@ import axiosInstance from '../../utils/axiosinstance';
 function Bid() {
   const { auctionId } = useParams();
   const [auctionItem, setAuctionItem] = useState(null);
+  const [auctionStatus, setAuctionStatus] = useState(null);
   const [highestBid, setHighestBid] = useState(null);
   const [bidAmount, setBidAmount] = useState('');
-  const [auctionEndDate, setAuctionEndDate] = useState(""); // Stores epoch time in milliseconds as a string
   const [userId, setUserId] = useState(null);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  const [timeRemaining, setTimeRemaining] = useState('');
+  const [timeRemaining, setTimeRemaining] = useState('Loading...');
   const navigate = useNavigate();
   const isOwnAuction = auctionItem && userId === auctionItem.userId;
 
   useEffect(() => {
     fetchUserSession();
     fetchAuctionItem();
+    fetchAuctionStatus();
     fetchHighestBid();
   }, []);
 
   useEffect(() => {
-    if (!auctionItem || !auctionItem.auctionEndDate) return; // Wait until auctionItem is loaded
+    if (!auctionItem) {
+      console.log('Auction item not yet loaded:', { auctionItem });
+      return;
+    }
 
-    setAuctionEndDate(auctionItem.auctionEndDate); // Set the end date from the fetched auction item
+    const endDate = auctionStatus.endTimeEpoch;
+    if (!endDate) {
+      console.error('Auction end date not found in auction item:', auctionItem);
+      setTimeRemaining('End date not available');
+      return;
+    }
+
+    const endDateInMs = parseInt(endDate) * 1000; // Convert from seconds to milliseconds
 
     const updateTimer = () => {
-      const now = new Date().getTime(); // Current time in milliseconds
-      const endTime = parseInt(auctionEndDate); // Auction end time in milliseconds
-      const totalSeconds = Math.floor((endTime - now) / 1000); // Remaining seconds
+      const now = new Date().getTime();
+      const totalSeconds = Math.floor((endDateInMs - now) / 1000);
 
       if (totalSeconds <= 0) {
         setTimeRemaining('Auction Ended');
+        console.log('Auction has ended');
         clearInterval(timerInterval);
         return;
       }
@@ -43,21 +54,27 @@ function Bid() {
       const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
       const seconds = totalSeconds % 60;
 
-      setTimeRemaining(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      const timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      setTimeRemaining(timeString);
+      console.log('Time remaining set to:', timeString);
     };
 
-    updateTimer(); // Initial call
-    const timerInterval = setInterval(updateTimer, 1000); // Update every second
+    updateTimer();
+    const timerInterval = setInterval(updateTimer, 1000);
 
-    return () => clearInterval(timerInterval); // Cleanup on unmount
-  }, [auctionItem, auctionEndDate]); // Re-run when auctionItem or auctionEndDate changes
+    return () => {
+      console.log('Cleaning up timer interval');
+      clearInterval(timerInterval);
+    };
+  }, [auctionItem]);
 
   const fetchUserSession = async () => {
     try {
       const res = await fetch('http://localhost:8080/api/users/me', { credentials: 'include' });
       if (!res.ok) throw new Error('User session not found. Please log in.');
       const data = await res.json();
-      setUserId(data.userId || data.user_id); // handles both snake and camel cases
+      setUserId(data.userId || data.user_id);
+      console.log('User session fetched:', data);
     } catch (err) {
       handleError(err, 'Error fetching user session.');
     }
@@ -66,7 +83,18 @@ function Bid() {
   const fetchAuctionItem = async () => {
     try {
       const response = await axiosInstance.get(`/api/auction-items/${auctionId}`);
+      console.log('API Response for auction item:', response.data); // Log the response
       setAuctionItem(response.data);
+    } catch (err) {
+      handleError(err, 'Error fetching auction item.');
+    }
+  };
+
+  const fetchAuctionStatus = async () => {
+    try {
+      const response = await axiosInstance.get(`/api/auction-status/${auctionId}`);
+      console.log('API Response for auction item:', response.data); // Log the response
+      setAuctionStatus(response.data);
     } catch (err) {
       handleError(err, 'Error fetching auction item.');
     }
@@ -76,6 +104,7 @@ function Bid() {
     try {
       const response = await axiosInstance.get(`/api/bids/auction/${auctionId}/highest`);
       setHighestBid(response.data);
+      console.log('Highest bid fetched:', response.data);
     } catch (err) {
       handleError(err, 'Error fetching highest bid.');
     }
@@ -85,6 +114,7 @@ function Bid() {
     const message = error.response?.data?.message || defaultMessage;
     setError(message);
     setTimeout(() => setError(null), 3000);
+    console.log('Error set:', message);
   };
 
   const handleBuyNow = async () => {
@@ -137,7 +167,6 @@ function Bid() {
       return;
     }
 
-    // ✅ NEW LOGIC: Disallow bids higher than buyNowPrice
     if (auctionItem.buyNowPrice && parseFloat(bidAmount) >= auctionItem.buyNowPrice) {
       setError(
         `Your bid is above the Buy Now price ($${auctionItem.buyNowPrice}). ` +
@@ -160,35 +189,38 @@ function Bid() {
       setSuccessMessage('Bid placed successfully!');
       setError('');
       fetchHighestBid();
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       handleError(err, 'Failed to place bid.');
     }
   };
 
-  // Check if auction has ended
   const isAuctionEnded = timeRemaining === 'Auction Ended';
 
   return (
     <>
       <Navbar />
       <div className='max-w-screen-md mx-auto px-4 mt-6'>
-        {error && <p className='text-red-500'>{error}</p>}
-        {successMessage && <p className='text-green-500'>{successMessage}</p>}
+        {error && <p className='text-red-500 mb-4'>{error}</p>}
+        {successMessage && <p className='text-green-500 mb-4'>{successMessage}</p>}
 
         {auctionItem ? (
           <>
             <h1 className='text-2xl font-bold'>{auctionItem.itemName}</h1>
             <p className='mt-2'>{auctionItem.itemDescription}</p>
-            <p className='mt-2 font-semibold'>Starting Price: ${auctionItem.startingPrice}</p>
             <p className='mt-2 font-semibold'>
-              Highest Bid: {highestBid ? `$${highestBid.bidAmount}` : 'Be the first to bid.'}
+              Starting Price: ${auctionItem.startingPrice.toLocaleString()}
             </p>
-            <p className='mt-2 font-semibold'>Time Remaining: {timeRemaining}</p>
+            <p className='mt-2 font-semibold'>
+              Highest Bid: {highestBid ? `$${highestBid.bidAmount.toLocaleString()}` : 'Be the first to bid.'}
+            </p>
+            <p className='mt-2 font-semibold'>
+              Time Remaining: {timeRemaining || 'Calculating...'}
+            </p>
 
-            {/* ✅ Show Buy Now button if the Auction Type supports it and auction hasn't ended */}
             {auctionItem.auctionType?.auctionTypeId === 2 && (
               <button
-                className={`mt-4 px-4 py-2 rounded text-white ${
+                className={`mt-4 px-6 py-2 rounded text-white font-semibold ${
                   isAuctionEnded ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
                 }`}
                 onClick={handleBuyNow}
@@ -201,24 +233,33 @@ function Bid() {
             <div className='mt-6'>
               <h2 className='text-lg font-bold'>Place a Bid</h2>
               {isOwnAuction ? (
-                <p className='text-gray-600'>You cannot bid on your own product.</p> // Show message instead of form
+                <p className='text-gray-600 mt-2'>You cannot bid on your own product.</p>
               ) : (
                 <>
-                  {isAuctionEnded && <p className='text-red-500'>Auction is over. No more bids accepted.</p>}
+                  {isAuctionEnded && <p className='text-red-500 mt-2'>Auction is over. No more bids accepted.</p>}
                   <input
                     type='number'
                     value={bidAmount}
-                    onChange={(e) => setBidAmount(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || (Number(value) >= 0 && Number.isInteger(Number(value)))) {
+                        setBidAmount(value);
+                      }
+                    }}
                     placeholder='Enter your bid'
-                    className='border p-2 rounded w-full mt-2'
-                    disabled={isAuctionEnded} // Disable input when auction ends
+                    className={`border p-2 rounded w-full mt-2 ${
+                      isAuctionEnded ? 'bg-gray-200 cursor-not-allowed' : ''
+                    }`}
+                    disabled={isAuctionEnded}
+                    min='0'
+                    step='1'
                   />
                   <button
-                    className={`mt-2 px-4 py-2 rounded text-white ${
+                    className={`mt-2 px-6 py-2 rounded text-white font-semibold ${
                       isAuctionEnded ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
                     }`}
                     onClick={handlePlaceBid}
-                    disabled={isAuctionEnded} // Disable button when auction ends
+                    disabled={isAuctionEnded}
                   >
                     {isAuctionEnded ? 'Auction Ended' : 'Place Bid'}
                   </button>
@@ -226,6 +267,8 @@ function Bid() {
               )}
             </div>
           </>
+        ) : error ? (
+          <p className='text-red-500'>Failed to load auction item. Please try again later.</p>
         ) : (
           <p>Loading...</p>
         )}
