@@ -24,8 +24,18 @@ function Bid() {
     fetchHighestBid();
   }, []);
 
+  function delay(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+  }
+  
+
   useEffect(() => {
-    const endDate = auctionStatus?.endTimeEpoch;
+    while (auctionStatus.endTimeEpoch == null){
+      delay(1000);
+    }
+
+
+    const endDate = auctionStatus.endTimeEpoch;
     if (!endDate) {
       console.error('Auction end date not found in auction item:', auctionItem);
       setTimeRemaining('End date not available');
