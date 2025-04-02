@@ -30,8 +30,8 @@ function Bid() {
   
 
   useEffect(() => {
-    while (auctionStatus.endTimeEpoch == null){
-      delay(1000);
+    if(auctionStatus.endTimeEpoch == null){
+      delay(100);
     }
 
 
