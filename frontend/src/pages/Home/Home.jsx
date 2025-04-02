@@ -58,8 +58,24 @@ function Home() {
         const response = await axiosInstance.get("/api/auction-items/search", {
           params: { keyword: searchQuery },
         });
+  
+        const enrichedSearchResults = await Promise.all(response.data.map(async (item) => {
+          try {
+            const statusResponse = await axiosInstance.get(`/api/auction-status/${item.auctionItemId}`);
+            const highestBidResponse = await axiosInstance.get(`/api/bids/auction/${item.auctionItemId}/highest`);
+            return {
+              ...item,
+              status: statusResponse.data.itemStatus,
+              highestBid: highestBidResponse.data ? highestBidResponse.data.bidAmount || "N/A" : "N/A"
+            };
+          } catch (error) {
+            console.error("Error enriching search result:", error);
+            return { ...item, status: "UNKNOWN", highestBid: "N/A" };
+          }
+        }));
+  
+        setAllAuctions(enrichedSearchResults);
         setIsSearch(true);
-        setAllAuctions(response.data);
       } catch (error) {
         console.error("Search API Error:", error);
       }
