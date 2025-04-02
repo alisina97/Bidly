@@ -12,6 +12,8 @@ import UserAuctionCataloguePage from './pages/UserAuctionCataloguePage/UserAucti
 import Bid from './pages/Bidding/Bid'
 import AdminControlPanel from './pages/Admin/AdminControlPanel'
 import UserDash from './pages/UserDash/UserDash'
+import ForgotPassword from './pages/Login/ForgotPassword'
+import ResetPassword from './pages/Login/ResetPassword'
 
 function App() {
   const routes = (
@@ -28,10 +30,11 @@ function App() {
         <Route path="/edit/:auctionId" element={<EditAuctionPage />} />
         <Route path='/bidend' exact element ={<BidEnd/>} />
         <Route path='/auction/bid/:auctionId' exact element ={<Bid/>} />
-		<Route path='/myAuctions/:userId' exact element ={<UserAuctionCataloguePage/>} />
+		    <Route path='/myAuctions/:userId' exact element ={<UserAuctionCataloguePage/>} />
         <Route path='/adminControlPanel' exact element ={<AdminControlPanel/>} />
         <Route path='/userDash' exact element={<UserDash />} />
-
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </Router>
   )

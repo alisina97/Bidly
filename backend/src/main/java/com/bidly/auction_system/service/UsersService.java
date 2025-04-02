@@ -97,4 +97,20 @@ public class UsersService {
         }
         return false;
     }
+
+    public Optional<Users> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public boolean updateUserPassword(String username, String newPassword) {
+        Optional<Users> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+
+        Users user = userOptional.get();
+        user.setPassword(newPassword);
+        userRepository.save(user);
+        return true;
+    }
 }

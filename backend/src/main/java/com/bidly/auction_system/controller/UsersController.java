@@ -123,4 +123,31 @@ public class UsersController {
             return ResponseEntity.status(404).body("User not found.");
         }
     }
+
+    // Forgot Password - Send reset link or respond with confirmation
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> payload) {
+        String username = payload.get("username");
+
+        Optional<Users> userOptional = userService.getUserByUsername(username);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Username not found."));
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Password reset instructions sent (simulated)."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
+        String username = payload.get("username");
+        String newPassword = payload.get("newPassword");
+
+        boolean updated = userService.updateUserPassword(username, newPassword);
+        if (!updated) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Password has been reset successfully."));
+    }
 }

@@ -94,6 +94,9 @@ function Login() {
 
             {error && <p className='text-red-500 text-xs pb-1'>{error}</p>}  
             <button type='submit' className='btn-primary'>Login</button>
+            <p className='text-sm text-center mt-2'>
+              <Link to="/forgot-password" className='text-blue-600 underline'>Forgot Password?</Link>
+            </p>
 
             <p className='text-sm text-center mt-4'>
               Not an existing Bidlier? {" "}
