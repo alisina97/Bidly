@@ -8,6 +8,7 @@ function Bid() {
   const [auctionItem, setAuctionItem] = useState(null);
   const [highestBid, setHighestBid] = useState(null);
   const [bidAmount, setBidAmount] = useState('');
+  const [auctionEndDate, setAuctionEndDate] = useState(""); // Stores epoch time in milliseconds as a string
   const [userId, setUserId] = useState(null);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -22,10 +23,15 @@ function Bid() {
   }, []);
 
   useEffect(() => {
-    // generic time until I got some actual info
-    let totalSeconds = (2 * 24 * 60 * 60) + (12 * 60 * 60) + (30 * 60) + 45;
+    if (!auctionItem || !auctionItem.auctionEndDate) return; // Wait until auctionItem is loaded
+
+    setAuctionEndDate(auctionItem.auctionEndDate); // Set the end date from the fetched auction item
 
     const updateTimer = () => {
+      const now = new Date().getTime(); // Current time in milliseconds
+      const endTime = parseInt(auctionEndDate); // Auction end time in milliseconds
+      const totalSeconds = Math.floor((endTime - now) / 1000); // Remaining seconds
+
       if (totalSeconds <= 0) {
         setTimeRemaining('Auction Ended');
         clearInterval(timerInterval);
@@ -38,14 +44,13 @@ function Bid() {
       const seconds = totalSeconds % 60;
 
       setTimeRemaining(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-      totalSeconds--;
     };
 
     updateTimer(); // Initial call
     const timerInterval = setInterval(updateTimer, 1000); // Update every second
 
-    return () => clearInterval(timerInterval);
-  }, []);
+    return () => clearInterval(timerInterval); // Cleanup on unmount
+  }, [auctionItem, auctionEndDate]); // Re-run when auctionItem or auctionEndDate changes
 
   const fetchUserSession = async () => {
     try {
@@ -160,6 +165,9 @@ function Bid() {
     }
   };
 
+  // Check if auction has ended
+  const isAuctionEnded = timeRemaining === 'Auction Ended';
+
   return (
     <>
       <Navbar />
@@ -177,13 +185,16 @@ function Bid() {
             </p>
             <p className='mt-2 font-semibold'>Time Remaining: {timeRemaining}</p>
 
-            {/* ✅ Show Buy Now button if the Auction Type supports it (or if you want for any type). */}
+            {/* ✅ Show Buy Now button if the Auction Type supports it and auction hasn't ended */}
             {auctionItem.auctionType?.auctionTypeId === 2 && (
               <button
-                className='mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600'
+                className={`mt-4 px-4 py-2 rounded text-white ${
+                  isAuctionEnded ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+                }`}
                 onClick={handleBuyNow}
+                disabled={isAuctionEnded}
               >
-                Buy Now for ${auctionItem.buyNowPrice}
+                {isAuctionEnded ? 'Auction Ended' : `Buy Now for $${auctionItem.buyNowPrice}`}
               </button>
             )}
 
@@ -193,18 +204,23 @@ function Bid() {
                 <p className='text-gray-600'>You cannot bid on your own product.</p> // Show message instead of form
               ) : (
                 <>
+                  {isAuctionEnded && <p className='text-red-500'>Auction is over. No more bids accepted.</p>}
                   <input
                     type='number'
                     value={bidAmount}
                     onChange={(e) => setBidAmount(e.target.value)}
                     placeholder='Enter your bid'
                     className='border p-2 rounded w-full mt-2'
+                    disabled={isAuctionEnded} // Disable input when auction ends
                   />
                   <button
-                    className='mt-2 px-4 py-2 rounded text-white bg-blue-500 hover:bg-blue-600'
+                    className={`mt-2 px-4 py-2 rounded text-white ${
+                      isAuctionEnded ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                    }`}
                     onClick={handlePlaceBid}
+                    disabled={isAuctionEnded} // Disable button when auction ends
                   >
-                    Place Bid
+                    {isAuctionEnded ? 'Auction Ended' : 'Place Bid'}
                   </button>
                 </>
               )}
