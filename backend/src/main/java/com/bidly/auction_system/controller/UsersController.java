@@ -21,7 +21,7 @@ public class UsersController {
 
     // Register a new user
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(
+    public ResponseEntity<?> registerUser(
             @RequestParam String username,
             @RequestParam String email,
             @RequestParam String password,
@@ -35,9 +35,9 @@ public class UsersController {
 
         try {
             userService.registerUser(username, email, password, firstName, lastName, country, city, postalCode, streetNumber, streetName, false);
-            return ResponseEntity.ok("User registered successfully!");
+            return ResponseEntity.ok(Map.of("message", "User registered successfully!"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(400).body(e.getMessage());
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
 

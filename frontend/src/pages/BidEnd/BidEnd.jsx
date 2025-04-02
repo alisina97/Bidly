@@ -90,11 +90,12 @@ const BidEnd = () => {
           <p>Standard Shipping: $10</p>
 
           <label className="shipping-option">
-            <input
-              type="checkbox"
-              checked={expeditedShipping}
-              onChange={() => setExpeditedShipping(!expeditedShipping)}
-            />
+          <input
+            type="checkbox"
+            checked={expeditedShipping}
+            onChange={() => setExpeditedShipping(!expeditedShipping)}
+            disabled={!isUserWinner} 
+          />
             Add Expedited Shipping (+$20)
           </label>
 
