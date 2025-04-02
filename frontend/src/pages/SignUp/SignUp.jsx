@@ -70,12 +70,12 @@ function SignUp() {
         password,
         firstName,
         lastName,
-        country: finalCountry, // ✅ Send selected or typed country
+        country: finalCountry,
         city,
         postalCode,
         streetNumber,
         streetName,
-		isAdmin: false,
+		    isAdmin: false,
       }).toString();
       
       const response = await axiosInstance.post(`/api/users/register?${queryParams}`);
