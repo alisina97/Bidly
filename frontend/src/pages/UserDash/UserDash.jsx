@@ -61,9 +61,10 @@ const UserDash = () => {
             categoryName: item.category?.categoryName,
             winningPrice: winner.winningPrice,
             paidFor: winner.paidFor ? "Paid" : "Unpaid",
-            dateWon: "(no date stored)",
+            dateWon: "(no date stored)", // If you have a real date, you can store & sort similarly
           };
         });
+        // If you have a real "dateWon" you could sort by newest first. Right now it's a placeholder.
         setAuctionsWonData(transformedData);
       })
       .catch((err) => {
@@ -83,14 +84,17 @@ const UserDash = () => {
           { withCredentials: true }
         );
 
-        const transformedBids = await Promise.all(
+        let transformedBids = await Promise.all(
           bidsResponse.data.map(async (bid) => {
             const item = bid.auctionItem || {};
 
-            // Format bidTime
-            let friendlyTime = bid.bidTime;
+            // We'll keep the raw datetime for sorting
+            const rawDateString = bid.bidTime;
+
+            // Format bidTime for display
+            let friendlyTime = rawDateString;
             try {
-              const dateObj = new Date(bid.bidTime);
+              const dateObj = new Date(rawDateString);
               friendlyTime = dateObj.toLocaleString("en-US", {
                 year: "numeric",
                 month: "short",
@@ -126,6 +130,9 @@ const UserDash = () => {
             }
 
             return {
+              // Keep a raw date (for sorting newest first)
+              rawBidTime: rawDateString,
+
               // Original fields
               itemName: item.itemName,
               itemDescription: item.itemDescription,
@@ -142,6 +149,13 @@ const UserDash = () => {
             };
           })
         );
+
+        // Sort newest first by rawBidTime
+        transformedBids.sort((a, b) => {
+          const dateA = new Date(a.rawBidTime);
+          const dateB = new Date(b.rawBidTime);
+          return dateB - dateA; // Descending
+        });
 
         setCurrentBidsData(transformedBids);
       } catch (err) {
