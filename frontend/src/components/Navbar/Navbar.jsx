@@ -5,7 +5,7 @@ import "./Navbar.css";
 
 const Navbar = () => {
     const navigate = useNavigate();
-    //for login state
+    // for login state
     const [userId, setUserId] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -17,7 +17,8 @@ const Navbar = () => {
                 });
                 setUserId(response.data.user_id);
                 setIsLoggedIn(true);
-            } catch (error) { //for invalid user sessions
+            } catch (error) { 
+                // for invalid user sessions
                 setUserId(null);
                 setIsLoggedIn(false);
                 console.error("Failed to fetch user session:", error);
@@ -27,7 +28,6 @@ const Navbar = () => {
     }, []);
 
     const handleLogout = async () => {
-        //changes to logout section and turns it to ask for signin
         try {
             await axios.post("http://localhost:8080/api/users/logout", {}, { withCredentials: true });
             setUserId(null); 
@@ -39,7 +39,7 @@ const Navbar = () => {
         }
     };
 
-    //login button action
+    // login button action
     const handleAuthAction = () => {
         if (isLoggedIn) {
             handleLogout();
@@ -52,7 +52,9 @@ const Navbar = () => {
         <nav className="navbar">
             <div className="nav-container">
                 <ul className="nav-links">
-                    <li><Link to="/home" className="nav-link">Home</Link></li>
+                    <li>
+                        <Link to="/home" className="nav-link">Home</Link>
+                    </li>
                     <li>
                         <Link 
                             to={isLoggedIn ? "/sell" : "/login"}
@@ -67,6 +69,15 @@ const Navbar = () => {
                             className="nav-link"
                         >
                             My Auctions
+                        </Link>
+                    </li>
+                    {/* NEW LINK to User Dashboard */}
+                    <li>
+                        <Link 
+                            to={isLoggedIn ? "/userDash" : "/login"}
+                            className="nav-link"
+                        >
+                            User Dashboard
                         </Link>
                     </li>
                 </ul>

@@ -6,6 +6,9 @@ import com.bidly.auction_system.model.AuctionItem;
 import com.bidly.auction_system.repository.WinnerRepository;
 import com.bidly.auction_system.repository.UsersRepository;
 import com.bidly.auction_system.repository.AuctionItemRepository;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -66,5 +69,10 @@ public class WinnerService {
     public boolean isPaidFor(Long auctionItemId) {
         Winner winner = winnerRepository.findByAuctionItemAuctionItemId(auctionItemId);
         return (winner != null && winner.isPaidFor());
+    }
+    
+    
+    public List<Winner> getWinnersByUserId(Long userId) {
+        return winnerRepository.findByUserUserId(userId);
     }
 }
