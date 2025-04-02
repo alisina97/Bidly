@@ -3,6 +3,25 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import axiosInstance from '../../utils/axiosinstance';
 
+class ErrorBoundary extends React.Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className='max-w-screen-md mx-auto px-4 mt-6'>
+          <h1 className='text-red-500'>Something went wrong. Please refresh the page.</h1>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function Bid() {
   const { auctionId } = useParams();
   const [auctionItem, setAuctionItem] = useState(null);
@@ -16,65 +35,46 @@ function Bid() {
   const [timeRemaining, setTimeRemaining] = useState('Loading...');
   const navigate = useNavigate();
   const isOwnAuction = auctionItem && userId === auctionItem.userId;
+  const isAuctionEnded = timeRemaining === 'Auction Ended';
 
   useEffect(() => {
     fetchUserSession();
     fetchAuctionItem();
     fetchAuctionStatus();
     fetchHighestBid();
-  }, []);
 
-  function delay(time) {
-    return new Promise(resolve => setTimeout(resolve, time));
-  }
+    // Poll only if auction hasn't ended
+    if (!isAuctionEnded) {
+      const interval = setInterval(() => {
+        fetchAuctionStatus();
+        fetchHighestBid();
+      }, 5000); // Poll every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [auctionId, isAuctionEnded]);
 
   useEffect(() => {
-    if (auctionStatus == null) { delay(100) }
+    if (!auctionStatus) {
+      setTimeRemaining('Loading auction status...');
+      return;
+    }
 
     const endDate = auctionStatus?.endTimeEpoch;
     if (!endDate) {
-      console.error('Auction end date not found in auction item:', auctionItem);
       setTimeRemaining('End date not available');
       return;
     }
 
     const endDateInMs = parseInt(endDate) * 1000;
-
     const updateTimer = () => {
       const now = new Date().getTime();
       const totalSeconds = Math.floor((endDateInMs - now) / 1000);
 
       if (totalSeconds <= 0) {
         setTimeRemaining('Auction Ended');
-        clearInterval(timerInterval);
         if (highestBid) {
           setWinningBid(highestBid);
-          const auctionData = new FormData();
-          auctionData.append("user", winningBid.userId);
-				  auctionData.append("auctionItem", auctionItem);
-				  auctionData.append("winningPrice", highestBid);
-
-          try {
-            const response =axios.post("http://localhost:8080/api/winners/add", auctionData, {
-              headers: {
-                "Content-Type": "multipart/form-data", // Important for file uploads
-              },
-            });
-          } catch (err) {
-            const { status, data } = error.response;
-          switch (status) {
-          case 400:
-            setError("Something went wrong with request"); // unexpected error
-            break;
-          case 429:
-            setError("Too Many Requests, Try again Later"); // database overflow
-            break;
-          default:
-            setError(data.message || "An unknown error occurred"); // generic error
-          }
-            setSuccessMessage(""); // Clear any previous success messages
-            setIsSubmitting(false); // Re-enable button on error
-          }
+          handleSubmit();
         }
         return;
       }
@@ -84,18 +84,43 @@ function Bid() {
       const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
       const seconds = totalSeconds % 60;
 
-      const timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-      setTimeRemaining(timeString);
+      setTimeRemaining(`${days}d ${hours}h ${minutes}m ${seconds}s`);
     };
 
     updateTimer();
     const timerInterval = setInterval(updateTimer, 1000);
 
-    return () => {
-      clearInterval(timerInterval);
-    };
-  }, [auctionItem, auctionStatus, highestBid]);
+    return () => clearInterval(timerInterval);
+  }, [auctionStatus, highestBid]);
 
+  useEffect(() => {
+    if (isAuctionEnded && winningBid) {
+      setTimeout(() => {
+        navigate('/bidend', {
+          state: {
+            auctionItemId: auctionId,
+            winningBid,
+          },
+        });
+      }, 2000); // Delay to show winning bid before redirect
+    }
+  }, [isAuctionEnded, winningBid, navigate, auctionId]);
+
+  const handleSubmit = async (event)=>{
+    const auctionData = new FormData(); auctionData.append("user", winningBid.userId);
+     auctionData.append("auctionItem", auctionItem); auctionData.append("winningPrice", highestBid);
+      try { const response =axios.post("http://localhost:8080/api/auction-items/add", auctionData, { headers: { "Content-Type": "multipart/form-data",
+       // Important for file uploads 
+       }, }); 
+      } 
+       catch (err) { const { status, data } = error.response; switch (status) {
+          case 400: setError("Something went wrong with request"); // unexpected error break; 
+          case 429: setError("Too Many Requests, Try again Later"); // database overflow
+          break; 
+          default: setError(data.message || "An unknown error occurred"); // generic error 
+          } setSuccessMessage("");
+        }
+  }
   const fetchUserSession = async () => {
     try {
       const res = await fetch('http://localhost:8080/api/users/me', { credentials: 'include' });
@@ -121,7 +146,7 @@ function Bid() {
       const response = await axiosInstance.get(`/api/auction-status/${auctionId}`);
       setAuctionStatus(response.data);
     } catch (err) {
-      handleError(err, 'Error fetching auction item.');
+      handleError(err, 'Error fetching auction status.');
     }
   };
 
@@ -129,7 +154,6 @@ function Bid() {
     try {
       const response = await axiosInstance.get(`/api/bids/auction/${auctionId}/highest`);
       setHighestBid(response.data);
-      console.log('Highest bid fetched:', response.data);
     } catch (err) {
       handleError(err, 'Error fetching highest bid.');
     }
@@ -159,9 +183,7 @@ function Bid() {
       setSuccessMessage('Item purchased successfully!');
       setTimeout(() => {
         navigate('/bidend', {
-          state: {
-            auctionItemId: auctionId,
-          },
+          state: { auctionItemId: auctionId },
         });
       }, 1000);
     } catch (err) {
@@ -175,7 +197,7 @@ function Bid() {
       return;
     }
 
-    if (auctionItem && userId === auctionItem.userId) {
+    if (isOwnAuction) {
       setError('You cannot bid on your own auction.');
       return;
     }
@@ -211,7 +233,6 @@ function Bid() {
 
       setBidAmount('');
       setSuccessMessage('Bid placed successfully!');
-      setError('');
       fetchHighestBid();
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
@@ -219,98 +240,110 @@ function Bid() {
     }
   };
 
-  const isAuctionEnded = timeRemaining === 'Auction Ended';
+  if (!auctionItem && !error) {
+    return (
+      <ErrorBoundary>
+        <Navbar />
+        <div className='max-w-screen-md mx-auto px-4 mt-6'>
+          <p>Loading...</p>
+        </div>
+      </ErrorBoundary>
+    );
+  }
+
+  if (error && !auctionItem) {
+    return (
+      <ErrorBoundary>
+        <Navbar />
+        <div className='max-w-screen-md mx-auto px-4 mt-6'>
+          <p className='text-red-500'>Failed to load auction item: {error}</p>
+        </div>
+      </ErrorBoundary>
+    );
+  }
 
   return (
-    <>
+    <ErrorBoundary>
       <Navbar />
       <div className='max-w-screen-md mx-auto px-4 mt-6'>
         {error && <p className='text-red-500 mb-4'>{error}</p>}
         {successMessage && <p className='text-green-500 mb-4'>{successMessage}</p>}
 
-        {auctionItem ? (
-          <>
-            <h1 className='text-2xl font-bold'>{auctionItem.itemName}</h1>
-            <p className='mt-2'>{auctionItem.itemDescription}</p>
-            <p className='mt-2 font-semibold'>
-              Starting Price: ${auctionItem.startingPrice.toLocaleString()}
-            </p>
-            <p className='mt-2 font-semibold'>
-              Highest Bid: {highestBid ? (
-                <>
-                  ${highestBid.bidAmount.toLocaleString()} by User{' '}
-                  {highestBid.userId === userId ? 'You' : highestBid.userId}
-                </>
-              ) : (
-                'Be the first to bid.'
-              )}
-            </p>
-            {isAuctionEnded && winningBid && (
-              <p className='mt-2 font-semibold text-green-600'>
-                Winning Bid: ${winningBid.bidAmount.toLocaleString()} by User{' '}
-                {winningBid.userId === userId ? 'You' : winningBid.userId}
-              </p>
-            )}
-            <p className='mt-2 font-semibold'>
-              Time Remaining: {timeRemaining || 'Calculating...'}
-            </p>
+        <h1 className='text-2xl font-bold'>{auctionItem.itemName}</h1>
+        <p className='mt-2'>{auctionItem.itemDescription}</p>
+        <p className='mt-2 font-semibold'>
+          Starting Price: ${auctionItem.startingPrice.toLocaleString()}
+        </p>
+        <p className='mt-2 font-semibold'>
+          Highest Bid: {highestBid ? (
+            <>
+              ${highestBid.bidAmount.toLocaleString()} by User{' '}
+              {highestBid.userId === userId ? 'You' : highestBid.userId}
+            </>
+          ) : (
+            'Be the first to bid.'
+          )}
+        </p>
+        {isAuctionEnded && winningBid && (
+          <p className='mt-2 font-semibold text-green-600'>
+            Winning Bid: ${winningBid.bidAmount.toLocaleString()} by User{' '}
+            {winningBid.userId === userId ? 'You' : winningBid.userId}
+          </p>
+        )}
+        <p className='mt-2 font-semibold'>
+          Time Remaining: {timeRemaining || 'Calculating...'}
+        </p>
 
-            {auctionItem.auctionType?.auctionTypeId === 2 && (
-              <button
-                className={`mt-4 px-6 py-2 rounded text-white font-semibold ${
-                  isAuctionEnded ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+        {auctionItem.auctionType?.auctionTypeId === 2 && (
+          <button
+            className={`mt-4 px-6 py-2 rounded text-white font-semibold ${
+              isAuctionEnded ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+            }`}
+            onClick={handleBuyNow}
+            disabled={isAuctionEnded}
+          >
+            {isAuctionEnded ? 'Auction Ended' : `Buy Now for $${auctionItem.buyNowPrice}`}
+          </button>
+        )}
+
+        <div className='mt-6'>
+          <h2 className='text-lg font-bold'>Place a Bid</h2>
+          {isOwnAuction ? (
+            <p className='text-gray-600 mt-2'>You cannot bid on your own product.</p>
+          ) : (
+            <>
+              {isAuctionEnded && <p className='text-red-500 mt-2'>Auction is over. No more bids accepted.</p>}
+              <input
+                type='number'
+                value={bidAmount}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || (Number(value) >= 0 && Number.isInteger(Number(value)))) {
+                    setBidAmount(value);
+                  }
+                }}
+                placeholder='Enter your bid'
+                className={`border p-2 rounded w-full mt-2 ${
+                  isAuctionEnded ? 'bg-gray-200 cursor-not-allowed' : ''
                 }`}
-                onClick={handleBuyNow}
+                disabled={isAuctionEnded}
+                min='0'
+                step='1'
+              />
+              <button
+                className={`mt-2 px-6 py-2 rounded text-white font-semibold ${
+                  isAuctionEnded ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                }`}
+                onClick={handlePlaceBid}
                 disabled={isAuctionEnded}
               >
-                {isAuctionEnded ? 'Auction Ended' : `Buy Now for $${auctionItem.buyNowPrice}`}
+                {isAuctionEnded ? 'Auction Ended' : 'Place Bid'}
               </button>
-            )}
-
-            <div className='mt-6'>
-              <h2 className='text-lg font-bold'>Place a Bid</h2>
-              {isOwnAuction ? (
-                <p className='text-gray-600 mt-2'>You cannot bid on your own product.</p>
-              ) : (
-                <>
-                  {isAuctionEnded && <p className='text-red-500 mt-2'>Auction is over. No more bids accepted.</p>}
-                  <input
-                    type='number'
-                    value={bidAmount}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === '' || (Number(value) >= 0 && Number.isInteger(Number(value)))) {
-                        setBidAmount(value);
-                      }
-                    }}
-                    placeholder='Enter your bid'
-                    className={`border p-2 rounded w-full mt-2 ${
-                      isAuctionEnded ? 'bg-gray-200 cursor-not-allowed' : ''
-                    }`}
-                    disabled={isAuctionEnded}
-                    min='0'
-                    step='1'
-                  />
-                  <button
-                    className={`mt-2 px-6 py-2 rounded text-white font-semibold ${
-                      isAuctionEnded ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
-                    }`}
-                    onClick={handlePlaceBid}
-                    disabled={isAuctionEnded}
-                  >
-                    {isAuctionEnded ? 'Auction Ended' : 'Place Bid'}
-                  </button>
-                </>
-              )}
-            </div>
-          </>
-        ) : error ? (
-          <p className='text-red-500'>Failed to load auction item. Please try again later.</p>
-        ) : (
-          <p>Loading...</p>
-        )}
+            </>
+          )}
+        </div>
       </div>
-    </>
+    </ErrorBoundary>
   );
 }
 
