@@ -20,7 +20,8 @@ INSERT INTO user_details (user_id, address_id, first_name, last_name) VALUES
 -- Insert Auction Types
 INSERT INTO auction_types (auction_type_name) VALUES
                                                   ('Standard Auction'),
-                                                  ('Buy Now');
+                                                  ('Buy Now'),
+                                                  ('Reserve Auction');
 
 -- Insert Categories
 INSERT INTO categories (category_name) VALUES
