@@ -65,6 +65,22 @@ function Bid() {
       return;
     }
 
+    const handleSubmit = async (event)=>{
+      const auctionData = new FormData(); auctionData.append("user", winningBid.userId);
+       auctionData.append("auctionItem", auctionItem); auctionData.append("winningPrice", highestBid);
+        try { const response =axios.post("http://localhost:8080/api/winners/add", auctionData, { headers: { "Content-Type": "multipart/form-data",
+         // Important for file uploads 
+         }, }); 
+        } 
+         catch (err) { const { status, data } = error.response; switch (status) {
+            case 400: setError("Something went wrong with request"); // unexpected error break; 
+            case 429: setError("Too Many Requests, Try again Later"); // database overflow
+            break; 
+            default: setError(data.message || "An unknown error occurred"); // generic error 
+            } setSuccessMessage("");
+          }
+    }
+
     const endDateInMs = parseInt(endDate) * 1000;
     const updateTimer = () => {
       const now = new Date().getTime();
@@ -106,21 +122,6 @@ function Bid() {
     }
   }, [isAuctionEnded, winningBid, navigate, auctionId]);
 
-  const handleSubmit = async (event)=>{
-    const auctionData = new FormData(); auctionData.append("user", winningBid.userId);
-     auctionData.append("auctionItem", auctionItem); auctionData.append("winningPrice", highestBid);
-      try { const response =axios.post("http://localhost:8080/api/auction-items/add", auctionData, { headers: { "Content-Type": "multipart/form-data",
-       // Important for file uploads 
-       }, }); 
-      } 
-       catch (err) { const { status, data } = error.response; switch (status) {
-          case 400: setError("Something went wrong with request"); // unexpected error break; 
-          case 429: setError("Too Many Requests, Try again Later"); // database overflow
-          break; 
-          default: setError(data.message || "An unknown error occurred"); // generic error 
-          } setSuccessMessage("");
-        }
-  }
   const fetchUserSession = async () => {
     try {
       const res = await fetch('http://localhost:8080/api/users/me', { credentials: 'include' });
