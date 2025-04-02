@@ -64,6 +64,26 @@ It is required to follow these steps to properly be able to run Bidly. Ignoring 
 
 This will launch the frontend on Vite’s default port (5173).
 
+---
+
+## 🐳 Docker Deployment (For TA Testing & Cloud Readiness)
+
+The backend service is containerized and published to Docker Hub for easy deployment and testing.
+
+### 🔗 Docker Hub Image
+**Backend:** [`alisina97/auction-backend`](https://hub.docker.com/r/alisina97/auction-backend)
+
+### 🧪 How to Run the Backend with Docker
+
+      ```bash
+      docker pull alisina97/auction-backend
+      docker run -p 8080:8080 alisina97/auction-backend
+      
+Then visit: http://localhost:8080
+
+❗ Notes:
+- Make sure your PostgreSQL database is running and accessible.
+- This Docker image only includes the backend — if you'd like help Dockerizing the frontend too or using docker-compose, let us know.
 
 ### Running the Application
 
