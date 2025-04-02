@@ -8,7 +8,8 @@ function Bid() {
   const [auctionItem, setAuctionItem] = useState(null);
   const [auctionStatus, setAuctionStatus] = useState(null);
   const [highestBid, setHighestBid] = useState(null);
-  const [winningBid, setWinningBid] = useState(null);
+  const [winningBid, setWinningBid] = useState(null); // New state for winning bid
+  const [bidAmount, setBidAmount] = useState('');
   const [userId, setUserId] = useState(null);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
