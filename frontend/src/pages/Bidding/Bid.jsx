@@ -36,6 +36,7 @@ function Bid() {
   const navigate = useNavigate();
   const isOwnAuction = auctionItem && userId === auctionItem.userId;
   const isAuctionEnded = timeRemaining === 'Auction Ended';
+  const [winnerExists, setWinnerExists] = useState(false);
 
   useEffect(() => {
     fetchUserSession();
@@ -52,6 +53,37 @@ function Bid() {
       return () => clearInterval(interval);
     }
   }, [auctionId, isAuctionEnded]);
+  
+  const handleSubmit = async () => {
+    console.log("handleSubmit called!"); // Log when called
+    console.log("Winning bid details:", winningBid);
+
+    if (!winningBid?.user || !auctionItem?.auctionItemId || !highestBid?.bidAmount) {
+      console.error("Error: Missing required data. Cannot submit winner.");
+      return;
+    }
+	
+    const formData = new URLSearchParams();
+    formData.append("userId", winningBid.user.userId);
+    formData.append("auctionItemId", auctionItem.auctionItemId);
+    formData.append("winningPrice", highestBid.bidAmount);
+
+    try {
+      const response = await axiosInstance.post(
+        "http://localhost:8080/api/winners/add",
+        formData,
+        { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+      );
+
+      console.log("Winner added successfully", response.data);
+      setSuccessMessage("Winner added successfully!");
+    } catch (err) {
+      console.error("Error adding winner:", err);
+      setError(err.response?.data?.message || "An error occurred.");
+    }
+  };
+
+
 
   useEffect(() => {
     if (!auctionStatus) {
@@ -64,44 +96,32 @@ function Bid() {
       setTimeRemaining('End date not available');
       return;
     }
-
-    const handleSubmit = async ()=>{
-      const auctionData = new FormData(); auctionData.append("userId", winningBid.userId);
-       auctionData.append("auctionItemId", auctionItem); auctionData.append("winningPrice", highestBid);
-        try { const response = axiosInstance.post("http://localhost:8080/api/winners/add", auctionData, { headers: { "Content-Type": "multipart/form-data",
-         }, }); 
-        } 
-         catch (err) { const { status, data } = error.response; switch (status) {
-            case 400: setError("Something went wrong with request"); // unexpected error break; 
-			break;
-            case 429: setError("Too Many Requests, Try again Later"); // database overflow
-            break; 
-            default: setError(data.message || "An unknown error occurred"); // generic error 
-            } setSuccessMessage("");
-          }
-    }
-
+	
     const endDateInMs = parseInt(endDate) * 1000;
-    const updateTimer = () => {
-      const now = new Date().getTime();
-      const totalSeconds = Math.floor((endDateInMs - now) / 1000);
+	const updateTimer = () => {
+	  const now = new Date().getTime();
+	  const totalSeconds = Math.floor((endDateInMs - now) / 1000);
 
-      if (totalSeconds <= 0) {
-        setTimeRemaining('Auction Ended');
-        if (highestBid) {
-          setWinningBid(highestBid);
-          handleSubmit();
-        }
-        return;
-      }
+	  if (totalSeconds <= 0) {
+	    setTimeRemaining('Auction Ended');
+	    
+	    if (highestBid) {
+	      setWinningBid(highestBid);
+	      if (highestBid.userId) { // Ensure userId exists
+	        handleSubmit();
+	      }
+	    }
+	    return;
+	  }
 
-      const days = Math.floor(totalSeconds / (24 * 60 * 60));
-      const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
-      const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
-      const seconds = totalSeconds % 60;
+	  const days = Math.floor(totalSeconds / (24 * 60 * 60));
+	  const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+	  const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+	  const seconds = totalSeconds % 60;
 
-      setTimeRemaining(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-    };
+	  setTimeRemaining(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+	};
+
 
     updateTimer();
     const timerInterval = setInterval(updateTimer, 1000);
@@ -109,6 +129,33 @@ function Bid() {
     return () => clearInterval(timerInterval);
   }, [auctionStatus, highestBid]);
 
+  const checkWinner = async () => {
+  	  try {
+  	    // Call the API to get the winner for the auction
+  	    const response = await axiosInstance.get(`/api/winners/${auctionId}`);
+  	    if (response.data) {
+  	      setWinnerExists(true); // Winner already exists
+  	    } else {
+  	      setWinnerExists(false); // No winner yet
+  	    }
+  	  } catch (err) {
+  	    console.error("Error checking winner:", err);
+  	    setWinnerExists(false); // Assume no winner if error occurs
+  	  }
+  	};
+	
+  useEffect(() => {
+	checkWinner();
+    if (timeRemaining === "Auction Ended" && highestBid) {
+      
+      setWinningBid(highestBid); // Ensure winningBid is set before submitting
+      if (highestBid.user && !winnerExists) {
+        handleSubmit();
+      }
+    }
+  }, [timeRemaining, highestBid]); 
+
+  
   useEffect(() => {
     if (isAuctionEnded && winningBid) {
       setTimeout(() => {
@@ -118,9 +165,11 @@ function Bid() {
             winningBid,
           },
         });
-      }, 2000); // Delay to show winning bid before redirect
+      }, 5000); // Delay to show winning bid before redirect
     }
   }, [isAuctionEnded, winningBid, navigate, auctionId]);
+  
+  
 
   const fetchUserSession = async () => {
     try {
