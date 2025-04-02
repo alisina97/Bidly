@@ -30,12 +30,9 @@ function Bid() {
   
 
   useEffect(() => {
-    if(auctionStatus.endTimeEpoch == null){
-      delay(100);
-    }
+    if (auctionStatus == null){delay(100)}
 
-
-    const endDate = auctionStatus.endTimeEpoch;
+    const endDate = auctionStatus?.endTimeEpoch;
     if (!endDate) {
       console.error('Auction end date not found in auction item:', auctionItem);
       setTimeRemaining('End date not available');
