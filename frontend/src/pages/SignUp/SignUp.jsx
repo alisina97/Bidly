@@ -89,7 +89,8 @@ function SignUp() {
       setTimeout(() => navigate("/login"), 1000);
 
     } catch (error) {
-      setError(error.response?.data?.message || "An unexpected error occurred, please try again.");
+      const backendError = error.response?.data?.error || error.response?.data?.message;
+      setError(backendError || "An unexpected error occurred, please try again.");
     }
   };
 
