@@ -65,15 +65,15 @@ function Bid() {
       return;
     }
 
-    const handleSubmit = async (event)=>{
-      const auctionData = new FormData(); auctionData.append("user", winningBid.userId);
-       auctionData.append("auctionItem", auctionItem); auctionData.append("winningPrice", highestBid);
-        try { const response =axios.post("http://localhost:8080/api/winners/add", auctionData, { headers: { "Content-Type": "multipart/form-data",
-         // Important for file uploads 
+    const handleSubmit = async ()=>{
+      const auctionData = new FormData(); auctionData.append("userId", winningBid.userId);
+       auctionData.append("auctionItemId", auctionItem); auctionData.append("winningPrice", highestBid);
+        try { const response = axiosInstance.post("http://localhost:8080/api/winners/add", auctionData, { headers: { "Content-Type": "multipart/form-data",
          }, }); 
         } 
          catch (err) { const { status, data } = error.response; switch (status) {
             case 400: setError("Something went wrong with request"); // unexpected error break; 
+			break;
             case 429: setError("Too Many Requests, Try again Later"); // database overflow
             break; 
             default: setError(data.message || "An unknown error occurred"); // generic error 
