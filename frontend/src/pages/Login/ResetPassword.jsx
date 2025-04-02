@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import axiosInstance from '../../utils/axiosinstance';
+
 
 function ResetPassword() {
   const [username, setUsername] = useState("");
@@ -7,6 +9,8 @@ function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,10 +34,10 @@ function ResetPassword() {
       });
 
       if (response.status === 200) {
-        setMessage("Password reset successful! You can now log in.");
-        setUsername("");
-        setNewPassword("");
-        setConfirmPassword("");
+        setMessage("Password reset successful! Redirecting to login...");
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500); 
       } else {
         setError("Unexpected error. Try again later.");
       }
@@ -45,6 +49,7 @@ function ResetPassword() {
       }
     }
   };
+
 
   return (
     <div className='flex items-center justify-center mt-28'>
