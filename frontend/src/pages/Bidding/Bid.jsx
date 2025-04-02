@@ -8,6 +8,7 @@ function Bid() {
   const [auctionItem, setAuctionItem] = useState(null);
   const [auctionStatus, setAuctionStatus] = useState(null);
   const [highestBid, setHighestBid] = useState(null);
+  const [winningBid, setWinningBid] = useState(null); // New state for winning bid
   const [bidAmount, setBidAmount] = useState('');
   const [userId, setUserId] = useState(null);
   const [error, setError] = useState(null);
@@ -24,19 +25,14 @@ function Bid() {
   }, []);
 
   useEffect(() => {
-    if (!auctionItem) {
-      console.log('Auction item not yet loaded:', { auctionItem });
-      return;
-    }
-
-    const endDate = auctionStatus.endTimeEpoch;
+    const endDate = auctionStatus?.endTimeEpoch;
     if (!endDate) {
       console.error('Auction end date not found in auction item:', auctionItem);
       setTimeRemaining('End date not available');
       return;
     }
 
-    const endDateInMs = parseInt(endDate) * 1000; // Convert from seconds to milliseconds
+    const endDateInMs = parseInt(endDate) * 1000;
 
     const updateTimer = () => {
       const now = new Date().getTime();
@@ -44,8 +40,11 @@ function Bid() {
 
       if (totalSeconds <= 0) {
         setTimeRemaining('Auction Ended');
-        console.log('Auction has ended');
         clearInterval(timerInterval);
+        // Set the highest bid as winning bid when auction ends
+        if (highestBid) {
+          setWinningBid(highestBid);
+        }
         return;
       }
 
@@ -56,17 +55,15 @@ function Bid() {
 
       const timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
       setTimeRemaining(timeString);
-      console.log('Time remaining set to:', timeString);
     };
 
     updateTimer();
     const timerInterval = setInterval(updateTimer, 1000);
 
     return () => {
-      console.log('Cleaning up timer interval');
       clearInterval(timerInterval);
     };
-  }, [auctionItem]);
+  }, [auctionItem, auctionStatus, highestBid]);
 
   const fetchUserSession = async () => {
     try {
@@ -74,7 +71,6 @@ function Bid() {
       if (!res.ok) throw new Error('User session not found. Please log in.');
       const data = await res.json();
       setUserId(data.userId || data.user_id);
-      console.log('User session fetched:', data);
     } catch (err) {
       handleError(err, 'Error fetching user session.');
     }
@@ -83,7 +79,6 @@ function Bid() {
   const fetchAuctionItem = async () => {
     try {
       const response = await axiosInstance.get(`/api/auction-items/${auctionId}`);
-      console.log('API Response for auction item:', response.data); // Log the response
       setAuctionItem(response.data);
     } catch (err) {
       handleError(err, 'Error fetching auction item.');
@@ -93,7 +88,6 @@ function Bid() {
   const fetchAuctionStatus = async () => {
     try {
       const response = await axiosInstance.get(`/api/auction-status/${auctionId}`);
-      console.log('API Response for auction item:', response.data); // Log the response
       setAuctionStatus(response.data);
     } catch (err) {
       handleError(err, 'Error fetching auction item.');
@@ -114,8 +108,7 @@ function Bid() {
     const message = error.response?.data?.message || defaultMessage;
     setError(message);
     setTimeout(() => setError(null), 3000);
-    console.log('Error set:', message);
-  };
+  }; 
 
   const handleBuyNow = async () => {
     if (!userId) {
@@ -214,6 +207,11 @@ function Bid() {
             <p className='mt-2 font-semibold'>
               Highest Bid: {highestBid ? `$${highestBid.bidAmount.toLocaleString()}` : 'Be the first to bid.'}
             </p>
+            {isAuctionEnded && winningBid && (
+              <p className='mt-2 font-semibold text-green-600'>
+                Winning Bid: ${winningBid.bidAmount.toLocaleString()}
+              </p>
+            )}
             <p className='mt-2 font-semibold'>
               Time Remaining: {timeRemaining || 'Calculating...'}
             </p>
