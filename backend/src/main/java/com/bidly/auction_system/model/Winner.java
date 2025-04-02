@@ -36,4 +36,5 @@ public class Winner {
         this.user = user;
         this.winningPrice = winningPrice;
     }
+    
 }

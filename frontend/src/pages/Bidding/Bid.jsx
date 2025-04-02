@@ -8,7 +8,7 @@ function Bid() {
   const [auctionItem, setAuctionItem] = useState(null);
   const [auctionStatus, setAuctionStatus] = useState(null);
   const [highestBid, setHighestBid] = useState(null);
-  const [winningBid, setWinningBid] = useState(null); // New state for winning bid
+  const [winningBid, setWinningBid] = useState(null);
   const [bidAmount, setBidAmount] = useState('');
   const [userId, setUserId] = useState(null);
   const [error, setError] = useState(null);
@@ -27,10 +27,9 @@ function Bid() {
   function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
   }
-  
 
   useEffect(() => {
-    if (auctionStatus == null){delay(100)}
+    if (auctionStatus == null) { delay(100) }
 
     const endDate = auctionStatus?.endTimeEpoch;
     if (!endDate) {
@@ -114,7 +113,7 @@ function Bid() {
     const message = error.response?.data?.message || defaultMessage;
     setError(message);
     setTimeout(() => setError(null), 3000);
-  }; 
+  };
 
   const handleBuyNow = async () => {
     if (!userId) {
@@ -211,11 +210,19 @@ function Bid() {
               Starting Price: ${auctionItem.startingPrice.toLocaleString()}
             </p>
             <p className='mt-2 font-semibold'>
-              Highest Bid: {highestBid ? `$${highestBid.bidAmount.toLocaleString()}` : 'Be the first to bid.'}
+              Highest Bid: {highestBid ? (
+                <>
+                  ${highestBid.bidAmount.toLocaleString()} by User{' '}
+                  {highestBid.userId === userId ? 'You' : highestBid.userId}
+                </>
+              ) : (
+                'Be the first to bid.'
+              )}
             </p>
             {isAuctionEnded && winningBid && (
               <p className='mt-2 font-semibold text-green-600'>
-                Winning Bid: ${winningBid.bidAmount.toLocaleString()}
+                Winning Bid: ${winningBid.bidAmount.toLocaleString()} by User{' '}
+                {winningBid.userId === userId ? 'You' : winningBid.userId}
               </p>
             )}
             <p className='mt-2 font-semibold'>
