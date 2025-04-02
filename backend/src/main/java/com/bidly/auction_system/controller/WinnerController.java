@@ -2,6 +2,9 @@ package com.bidly.auction_system.controller;
 
 import com.bidly.auction_system.model.Winner;
 import com.bidly.auction_system.service.WinnerService;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +30,8 @@ public class WinnerController {
     public boolean isUserWinner(@RequestParam Long userId, @RequestParam Long auctionItemId) {
         return winnerService.isUserWinner(userId, auctionItemId);
     }
+    
+    
 
     /**
      * 3) Add a winner record (assign a user as winner of an item)
@@ -53,4 +58,13 @@ public class WinnerController {
     public boolean isPaid(@RequestParam Long auctionItemId) {
         return winnerService.isPaidFor(auctionItemId);
     }
+    
+    
+    
+    @GetMapping("/by-user/{userId}")
+    public List<Winner> getWinnersByUserId(@PathVariable Long userId) {
+        return winnerService.getWinnersByUserId(userId);
+    }
+
 }
+

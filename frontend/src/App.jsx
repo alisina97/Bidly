@@ -12,6 +12,7 @@ import UserAuctionCataloguePage from './pages/UserAuctionCataloguePage/UserAucti
 import Bid from './pages/Bidding/Bid'
 import AdminLogin from './pages/Admin/AdminLogin'
 import AdminControlPanel from './pages/Admin/AdminControlPanel'
+import UserDash from './pages/UserDash/UserDash'
 
 function App() {
   const routes = (
@@ -31,6 +32,8 @@ function App() {
 		<Route path='/myAuctions/:userId' exact element ={<UserAuctionCataloguePage/>} />
         <Route path='/adminLogin' exact element ={<AdminLogin/>} />
         <Route path='/adminControlPanel' exact element ={<AdminControlPanel/>} />
+        <Route path='/userDash' exact element={<UserDash />} />
+
       </Routes>
     </Router>
   )
