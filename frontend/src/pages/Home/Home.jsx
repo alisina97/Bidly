@@ -9,8 +9,20 @@ function Home() {
   const [isSearch, setIsSearch] = useState(false);
   const [allAuctions, setAllAuctions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loggedInUserId, setLoggedInUserId] = useState(null);
   const itemsPerPage = 20;
   const navigate = useNavigate();
+
+  // ✅ Get the logged-in user
+  useEffect(() => {
+    axiosInstance.get("/api/users/me", { withCredentials: true })
+      .then(res => {
+        setLoggedInUserId(res.data.userId || res.data.user_id);
+      })
+      .catch(err => {
+        console.error("Failed to get logged in user:", err);
+      });
+  }, []);
 
   useEffect(() => {
     fetchAllAuctions();
@@ -88,36 +100,45 @@ function Home() {
           <div className="mt-5">
             <h2 className="text-lg font-bold mb-3">Auction Items</h2>
             <div className="grid grid-cols-5 gap-4">
-              {paginatedAuctions.map((item) => (
-                <div key={item.auctionItemId} className="border p-4 rounded-lg shadow hover:shadow-md">
-                  <h3 className="font-semibold">{item.itemName}</h3>
-                  <p>Starting Price: ${item.startingPrice}</p>
-                  <p>Type: {item.auctionType?.auctionTypeName || "Unknown"}</p>
-                  {item.auctionType?.auctionTypeName === "Buy Now" && (
-                    <p>Buy Now Price: ${item.buyNowPrice || "N/A"}</p>
-                  )}
-                  <p>Highest Bid: ${item.highestBid || "N/A"}</p>
-                  {item.status === "SOLD" ? (
-                    <div>
-                      <p className="text-red-500 font-bold">SOLD</p>
-                      <button 
-                        className="mt-2 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-                        onClick={() => navigate('/bidend', { state: { auctionItemId: item.auctionItemId } })}
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                      onClick={() => handleBid(item.auctionItemId)}
-                    >
-                      Bid
-                    </button>
-                  )}
+              {paginatedAuctions.map((item) => {
+                const isOwner = item.user?.userId === loggedInUserId;
 
-                </div>
-              ))}
+                return (
+                  <div key={item.auctionItemId} className="border p-4 rounded-lg shadow hover:shadow-md">
+                    <h3 className="font-semibold">{item.itemName}</h3>
+                    <p>Starting Price: ${item.startingPrice}</p>
+                    <p>Type: {item.auctionType?.auctionTypeName || "Unknown"}</p>
+                    {item.auctionType?.auctionTypeName === "Buy Now" && (
+                      <p>Buy Now Price: ${item.buyNowPrice || "N/A"}</p>
+                    )}
+                    <p>Highest Bid: ${item.highestBid || "N/A"}</p>
+
+                    {item.status === "SOLD" ? (
+                      <div>
+                        <p className="text-red-500 font-bold">SOLD</p>
+                        <button 
+                          className="mt-2 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+                          onClick={() => navigate('/bidend', { state: { auctionItemId: item.auctionItemId } })}
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <button 
+                          className={`mt-2 px-4 py-2 rounded text-white w-full ${
+                            isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                          }`}
+                          onClick={() => !isOwner && handleBid(item.auctionItemId)}
+                          disabled={isOwner}
+                        >
+                          {isOwner ? "Your Auction" : "Bid"}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             <div className="flex justify-between items-center mt-4">

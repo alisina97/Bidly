@@ -69,7 +69,7 @@ const Navbar = () => {
                     </li>
                     <li>
                         <Link 
-                            to={isLoggedIn && userId ? `/myAuctions/${userId}` : "/login"} 
+                            to={isLoggedIn ? `/myAuctions/${userId}` : "/login"} 
                             className="nav-link"
                         >
                             My Auctions
