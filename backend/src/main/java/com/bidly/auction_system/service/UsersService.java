@@ -80,6 +80,7 @@ public class UsersService {
         if (userRepository.existsById(userId)) {
         	userDetailsRepository.deleteByUserId(userId);
             userRepository.deleteById(userId);
+            addressRepository.deleteById(userId);
             return true;
         }
         return false;
