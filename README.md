@@ -75,9 +75,10 @@ The backend service is containerized and published to Docker Hub for easy deploy
 
 ### 🧪 How to Run the Backend with Docker
 
-      ```bash
-      docker pull alisina97/auction-backend
-      docker run -p 8080:8080 alisina97/auction-backend
+   ```sh
+   docker pull alisina97/auction-backend
+   docker run -p 8080:8080 alisina97/auction-backend
+   ```
       
 Then visit: http://localhost:8080
 
